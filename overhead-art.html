@@ -25,15 +25,18 @@ body{font-family:Georgia,'Times New Roman',serif;}
 
 /* -- Masthead -- */
 #mast{
-  display:flex;justify-content:space-between;align-items:baseline;
+  display:flex;justify-content:space-between;align-items:center;
   flex-shrink:0;
+  opacity:.4;transition:opacity .4s;
 }
-.mast-title{
-  font-size:clamp(10px,1.1vw,15px);
-  letter-spacing:.45em;font-weight:400;
+#mast:hover{opacity:1;}
+.mast-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--fg2);opacity:.25;
   cursor:pointer;user-select:none;
-  text-transform:uppercase;
+  transition:opacity .3s, transform .3s;
 }
+.mast-dot:hover{opacity:.7;transform:scale(1.3);}
 .mast-ctrl{display:flex;gap:14px;align-items:baseline;}
 .mbtn{
   font-family:Georgia,serif;background:none;border:none;color:var(--fg2);
@@ -102,13 +105,24 @@ body.artfx #stage::after{
 
 /* -- Footer — single poster line -- */
 #colophon{
-  flex-shrink:0;padding-top:clamp(8px,1.4vh,16px);
-  border-top:1px solid var(--line);
+  flex-shrink:0;padding-top:clamp(10px,1.6vh,18px);
   text-align:center;
-  font-size:clamp(6px,.62vw,9px);
-  letter-spacing:.22em;color:var(--fg2);
-  text-transform:uppercase;
+  font-style:italic;
+  font-size:clamp(8px,.82vw,12px);
+  letter-spacing:.08em;color:var(--fg2);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#colophon .num{
+  font-style:normal;
+  letter-spacing:.15em;
+  opacity:.75;
+}
+#colophon .rule{
+  display:inline-block;
+  width:clamp(20px,3vw,44px);height:1px;
+  background:var(--line);
+  vertical-align:middle;
+  margin:0 clamp(10px,1.5vw,22px);
 }
 
 .empty-note{
@@ -128,7 +142,7 @@ body.artfx #stage::after{
 <body data-theme="portrait">
 <div id="poster">
   <div id="mast">
-    <div class="mast-title" id="brand" onclick="togglePalette()">Overhead</div>
+    <div class="mast-dot" id="brand" onclick="togglePalette()" title="Palette"></div>
     <div class="mast-ctrl">
       <button class="mbtn" id="artbtn" onclick="toggleArt()">Print</button>
       <button class="mbtn" id="demobtn" onclick="toggleDemo()">Demo</button>
@@ -226,6 +240,11 @@ const DEMO=[
 ];
 
 function alOf(cs){return(cs||'').replace(/\d.*$/,'').toUpperCase();}
+function fmtDate(){
+  const d=new Date();
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return months[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();
+}
 // Default type per airline when ADS-B type is missing/unknown
 const DEFAULT_TYPE={DAL:'738',UAL:'738',AAL:'321',SWA:'738',AAY:'320',NKS:'320',
 ASA:'738',JBU:'320',FFT:'320',ENY:'E75',GJS:'CR9',RPA:'E75',SKW:'E75',
@@ -326,10 +345,8 @@ function renderDemo(){
     const cap=capLine(p.name,FTYPES[p.tc]||'',route,p.alt,'');
     document.getElementById('s'+i).innerHTML=slotHTML(src,cap);
   });
-  const today=new Date();
-  const dateStr=today.getDate()+' '+['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][today.getMonth()]+' '+today.getFullYear();
   document.getElementById('colophon').innerHTML=
-    `&#8470; ${posterNum} &nbsp;&middot;&nbsp; ${dateStr} &nbsp;&middot;&nbsp; DEMONSTRATION &nbsp;&middot;&nbsp; 3 AIRCRAFT`;
+    `<span class="rule"></span><span class="num">&#8470; ${posterNum}</span>&ensp;&mdash;&ensp;Received ${fmtDate()}, three aircraft in composition<span class="rule"></span>`;
 }
 
 function render(ac){
@@ -349,14 +366,12 @@ function render(ac){
   }
   // Colophon: ? · date · coords · location · N aircraft
   if(uLat){
-    const today=new Date();
-    const dateStr=today.getDate()+' '+['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][today.getMonth()]+' '+today.getFullYear();
-    const coords=Math.abs(uLat).toFixed(4)+'\u00b0 '+(uLat>=0?'N':'S')+' '+Math.abs(uLon).toFixed(4)+'\u00b0 '+(uLon>=0?'E':'W');
+    const coords=Math.abs(uLat).toFixed(4)+'\u00b0'+(uLat>=0?'N':'S')+' '+Math.abs(uLon).toFixed(4)+'\u00b0'+(uLon>=0?'E':'W');
     const locName=localStorage.getItem('oh_city')||'';
+    const over=locName?` over ${locName}`:'';
+    const n=ac.length===1?'one aircraft':ac.length===2?'two aircraft':ac.length===3?'three aircraft':ac.length+' aircraft';
     document.getElementById('colophon').innerHTML=
-      `&#8470; ${posterNum} &nbsp;&middot;&nbsp; ${dateStr} &nbsp;&middot;&nbsp; ${coords}`+
-      (locName?` &nbsp;&middot;&nbsp; RECEIVED OVER ${locName.toUpperCase()}`:'')+
-      ` &nbsp;&middot;&nbsp; ${ac.length} AIRCRAFT`;
+      `<span class="rule"></span><span class="num">&#8470; ${posterNum}</span>&ensp;&mdash;&ensp;Received ${fmtDate()}${over}, ${coords}, ${n}<span class="rule"></span>`;
   }
 }
 
