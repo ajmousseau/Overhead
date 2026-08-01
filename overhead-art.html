@@ -260,25 +260,40 @@ async function lookupRoute(cs){
 async function fetchFlights(){
   if(!uLat||demoMode)return;
   const la=uLat.toFixed(4),lo=uLon.toFixed(4);
-  let best=[];
-  for(const r of RADII){
-    try{
-      const urls=[`/.netlify/functions/flights?lat=${la}&lon=${lo}&radius=${r}`,
-                  `https://api.adsb.lol/v2/lat/${la}/lon/${lo}/dist/${r}`];
-      let resp=null;
-      for(const u of urls){try{const t=await fetchT(u,10000);if(t.ok){resp=t;break;}}catch(e){continue;}}
-      if(!resp)continue;
+  // Single fetch at max radius — closest 3 naturally rise to the top.
+  // No expanding loop, no churn when flights enter/leave inner rings.
+  const R=100;
+  let best=null;   // null = fetch failed entirely (keep previous display)
+  try{
+    const urls=[`/.netlify/functions/flights?lat=${la}&lon=${lo}&radius=${R}`,
+                `https://api.adsb.lol/v2/lat/${la}/lon/${lo}/dist/${R}`];
+    let resp=null;
+    for(const u of urls){try{const t=await fetchT(u,10000);if(t.ok){resp=t;break;}}catch(e){continue;}}
+    if(resp){
       const d=await resp.json();
-      const ac=(d.ac||[]).filter(a=>{
+      best=(d.ac||[]).filter(a=>{
         if(!a.flight)return false;
         const cs=a.flight.trim().toUpperCase();
         if(!/^[A-Z]{2,3}\d/.test(cs)||/^N\d/.test(cs))return false;
         return livSrc(alOf(cs),(a.t||'').toUpperCase())!==null;
       }).map(a=>({...a,_d:hav(uLat,uLon,a.lat,a.lon)}))
         .filter(a=>isFinite(a._d)).sort((a,b)=>a._d-b._d).slice(0,3);
-      if(ac.length>0){best=ac;break;}
-    }catch(e){}
+    }
+  }catch(e){}
+
+  if(best===null){
+    // Total fetch failure — keep showing what we had, try again next cycle
+    console.warn('[fetch] failed, keeping previous display');
+    return;
   }
+  if(best.length===0 && last.length>0){
+    // Empty result but we had flights 30s ago — likely a data hiccup.
+    // Keep previous display for one more cycle rather than blanking.
+    console.warn('[fetch] empty result, holding previous flights one cycle');
+    last._staleCount=(last._staleCount||0)+1;
+    if(last._staleCount<3)return;   // hold up to 3 cycles (90s) before clearing
+  }
+
   best.forEach(a=>{if(a.dep_iata&&a.arr_iata){const cs=a.flight.trim().toUpperCase();
     if(RC[cs]===undefined)RC[cs]={from:a.dep_iata,to:a.arr_iata};}});
   last=best;render(best);
