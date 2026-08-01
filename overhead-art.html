@@ -5,150 +5,182 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>OVERHEAD</title>
 <style>
-/* -- Theme palettes -- */
-:root{ --bg:#0A0F14; --fg:#F5F5F0; --fg2:rgba(245,245,240,0.45); --line:rgba(245,245,240,0.08); }
-body[data-theme="red"]    { --bg:#991B1B; --fg:#FAF5EB; --fg2:rgba(250,245,235,0.5); --line:rgba(250,245,235,0.12); }
-body[data-theme="navy"]   { --bg:#1E3A5F; --fg:#F0F4F8; --fg2:rgba(240,244,248,0.45); --line:rgba(240,244,248,0.1); }
-body[data-theme="forest"] { --bg:#1A3A2A; --fg:#F0F5EE; --fg2:rgba(240,245,238,0.45); --line:rgba(240,245,238,0.1); }
-body[data-theme="slate"]  { --bg:#1F2937; --fg:#F9FAFB; --fg2:rgba(249,250,251,0.45); --line:rgba(249,250,251,0.08); }
-body[data-theme="plum"]   { --bg:#3B1F44; --fg:#FAF0FF; --fg2:rgba(250,240,255,0.45); --line:rgba(250,240,255,0.1); }
-body[data-theme="chalk"]  { --bg:#F5F0E8; --fg:#1A1A1A; --fg2:rgba(26,26,26,0.4); --line:rgba(26,26,26,0.08); }
+/* -- Palette -- */
+:root{ --bg:#0A0B0D; --fg:#EEE8DC; --fg2:rgba(238,232,220,0.38); --line:rgba(238,232,220,0.07); }
+[data-theme="portrait"] { --bg:#8B1A1A; --fg:#F5EDDF; --fg2:rgba(245,237,223,0.45); --line:rgba(245,237,223,0.1); }
+[data-theme="nightflight"]{ --bg:#0A1628; --fg:#D8E4F0; --fg2:rgba(216,228,240,0.38); --line:rgba(216,228,240,0.08); }
+[data-theme="dusk"]  { --bg:#16102A; --fg:#E8DCFF; --fg2:rgba(232,220,255,0.38); --line:rgba(232,220,255,0.08); }
+[data-theme="sienna"]{ --bg:#1A0F08; --fg:#F0E4D0; --fg2:rgba(240,228,208,0.4); --line:rgba(240,228,208,0.08); }
+[data-theme="forest"]{ --bg:#0C1C10; --fg:#D8EDD8; --fg2:rgba(216,237,216,0.38); --line:rgba(216,237,216,0.08); }
+[data-theme="chalk"] { --bg:#F0EAE0; --fg:#1A1614; --fg2:rgba(26,22,20,0.4); --line:rgba(26,22,20,0.07); }
 
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--fg);font-family:'Courier New',Courier,monospace;transition:background .4s,color .4s;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--fg);transition:background .5s,color .4s;}
+body, button, input { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
 
-#app{height:100vh;display:flex;flex-direction:column;padding:14px 36px 10px;}
+#app{height:100vh;display:flex;flex-direction:column;padding:16px 40px 12px;}
 
 /* -- Header -- */
-#hdr{display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--line);flex-shrink:0;}
-.hdr-l{font-size:8px;letter-spacing:6px;opacity:.4;cursor:pointer;user-select:none;}
-.hdr-c{font-size:8px;letter-spacing:3px;color:var(--fg2);}
-.hdr-r{display:flex;align-items:center;gap:12px;}
-.hdr-time{font-size:9px;letter-spacing:2px;opacity:.25;font-variant-numeric:tabular-nums;}
-.demo-btn{font-size:7px;letter-spacing:3px;opacity:.35;cursor:pointer;padding:3px 7px;border:1px solid var(--line);user-select:none;}
-.demo-btn.on{opacity:.7;border-color:var(--fg2);}
+#hdr{display:flex;justify-content:space-between;align-items:center;padding-bottom:11px;border-bottom:1px solid var(--line);flex-shrink:0;}
+.hdr-brand{font-size:8px;letter-spacing:.35em;font-weight:300;opacity:.35;cursor:pointer;user-select:none;text-transform:uppercase;}
+.hdr-loc{font-size:8px;letter-spacing:.2em;font-weight:300;color:var(--fg2);}
+.hdr-r{display:flex;align-items:center;gap:14px;}
+.hdr-time{font-size:8px;letter-spacing:.18em;font-weight:300;opacity:.22;font-variant-numeric:tabular-nums;}
+.ctrl-btn{font-size:6px;letter-spacing:.3em;font-weight:400;opacity:.28;cursor:pointer;padding:3px 8px;border:1px solid var(--line);background:none;color:var(--fg);text-transform:uppercase;transition:opacity .2s;}
+.ctrl-btn:hover,.ctrl-btn.on{opacity:.65;border-color:var(--fg2);}
 
-/* -- Color palette popup -- */
-#palette{display:none;position:fixed;top:38px;left:36px;z-index:100;display:none;flex-direction:row;gap:6px;padding:8px 10px;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);}
+/* -- Palette popup -- */
+#palette{display:none;position:fixed;top:44px;left:40px;z-index:200;gap:7px;padding:8px 10px;background:rgba(0,0,0,.7);backdrop-filter:blur(12px);}
 #palette.show{display:flex;}
-.swatch{width:22px;height:22px;border-radius:3px;cursor:pointer;border:2px solid transparent;transition:border-color .2s;}
-.swatch:hover,.swatch.active{border-color:var(--fg);}
+.swatch{width:24px;height:24px;border-radius:2px;cursor:pointer;border:2px solid transparent;flex-shrink:0;}
+.swatch:hover,.swatch.act{border-color:var(--fg);}
 
 /* -- Rows -- */
 #rows{flex:1;display:flex;flex-direction:column;min-height:0;}
-.prow{flex:1;display:flex;align-items:center;border-bottom:1px solid var(--line);overflow:hidden;min-height:0;transition:opacity .6s;}
+.prow{flex:1;display:flex;align-items:center;border-bottom:1px solid var(--line);overflow:hidden;min-height:0;transition:opacity .7s;}
 .prow:last-child{border-bottom:none;}
 
-/* -- Aircraft image — the art -- */
+/* -- Aircraft — the art -- */
 .pimg{
-  flex:0 0 76%;height:100%;
+  flex:0 0 84%;height:100%;
   display:flex;align-items:center;
-  padding:8px 24px 8px 0;
-  overflow:hidden;
+  padding:10px 32px 10px 0;
+  overflow:hidden;position:relative;
 }
 .pimg img.livery{
   width:100%;height:100%;
-  object-fit:contain;
-  object-position:left center;
-  display:block;
-  /* slight drop shadow to lift aircraft off colored bg */
-  filter:drop-shadow(0 4px 20px rgba(0,0,0,.25));
+  object-fit:contain;object-position:left center;display:block;
+  filter:drop-shadow(0 6px 28px rgba(0,0,0,.3));
+  transition:filter .4s;
 }
-.pimg img.fallback{height:30%;width:auto;object-fit:contain;margin:auto;opacity:.4;filter:brightness(0) invert(1);}
-.pimg .noimg{font-size:clamp(20px,4vw,60px);letter-spacing:8px;opacity:.06;margin:auto;}
+/* Art print filter */
+body.artfx .pimg img.livery{
+  filter:drop-shadow(0 6px 28px rgba(0,0,0,.3)) contrast(1.06) saturate(0.78) sepia(0.08) brightness(0.96);
+}
+/* Grain overlay for print feel */
+body.artfx .pimg::after{
+  content:'';position:absolute;inset:0;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode:overlay;
+}
+.pimg img.fallback{height:28%;width:auto;object-fit:contain;margin:auto;opacity:.35;filter:brightness(0) invert(1);}
+.pimg .noimg{font-size:clamp(16px,3.5vw,52px);letter-spacing:.3em;opacity:.05;margin:auto;font-weight:200;}
 
-/* -- Caption — museum label style -- */
+/* -- Caption — gallery label -- */
 .pcap{
-  flex:1;
-  padding:0 0 0 18px;
+  flex:1;padding:0 0 0 16px;
   border-left:1px solid var(--line);
-  display:flex;flex-direction:column;
-  justify-content:center;
-  gap:0;
+  display:flex;flex-direction:column;justify-content:center;
+  gap:0;overflow:hidden;
 }
-.cap-flight{font-size:clamp(13px,1.8vw,22px);letter-spacing:5px;font-weight:700;line-height:1;white-space:nowrap;}
-.cap-airline{font-size:clamp(6px,.75vw,9px);letter-spacing:4px;color:var(--fg2);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cap-type{font-size:clamp(5px,.6vw,7px);letter-spacing:3px;color:var(--fg2);margin-top:2px;opacity:.6;}
-.cap-divider{border:none;border-top:1px solid var(--line);margin:clamp(6px,1vh,12px) 0;}
-.cap-route{font-size:clamp(11px,1.5vw,18px);letter-spacing:4px;white-space:nowrap;}
-.cap-cities{font-size:clamp(5px,.6vw,7px);letter-spacing:2px;color:var(--fg2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cap-dist{font-size:clamp(7px,.9vw,11px);letter-spacing:3px;margin-top:clamp(5px,1vh,10px);}
+.cap-flight{
+  font-size:clamp(11px,1.5vw,19px);
+  letter-spacing:.22em;font-weight:300;
+  white-space:nowrap;line-height:1;
+}
+.cap-airline{
+  font-size:clamp(6px,.6vw,8px);
+  letter-spacing:.25em;font-weight:400;
+  color:var(--fg2);margin-top:5px;
+  text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.cap-type{
+  font-size:clamp(5px,.55vw,7px);
+  letter-spacing:.2em;
+  color:var(--fg2);margin-top:2px;opacity:.55;
+  text-transform:uppercase;
+}
+.cap-rule{border:none;border-top:1px solid var(--line);margin:clamp(6px,1.2vh,14px) 0;}
+.cap-route{
+  font-size:clamp(10px,1.3vw,16px);
+  letter-spacing:.18em;font-weight:300;white-space:nowrap;
+}
+.cap-cities{
+  font-size:clamp(5px,.55vw,7px);
+  letter-spacing:.15em;color:var(--fg2);
+  margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.cap-dist{
+  font-size:clamp(6px,.7vw,9px);
+  letter-spacing:.2em;margin-top:clamp(5px,1vh,12px);
+  text-transform:uppercase;
+}
 
-/* -- Footer -- */
-#ftr{flex-shrink:0;padding-top:8px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;font-size:6px;letter-spacing:3px;color:var(--fg2);opacity:.5;}
+/* -- Footer — poster coordinates -- */
+#ftr{
+  flex-shrink:0;padding-top:9px;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:baseline;
+  font-size:6px;letter-spacing:.3em;color:var(--fg2);opacity:.45;
+  font-weight:300;text-transform:uppercase;
+}
 
-/* -- Empty -- */
-.pempty{display:flex;align-items:center;width:100%;font-size:8px;letter-spacing:6px;opacity:.06;}
+.pempty{display:flex;align-items:center;width:100%;font-size:7px;letter-spacing:.4em;opacity:.05;font-weight:300;text-transform:uppercase;}
 
-/* -- Scanlines -- */
-body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px);pointer-events:none;z-index:998;}
-
-/* -- ZIP overlay -- */
-#zo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:2000;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+/* -- ZIP -- */
+#zo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:2000;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
 #zo.show{display:flex;}
-#zi{background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;font-family:'Courier New',monospace;font-size:20px;letter-spacing:6px;padding:10px 16px;width:145px;text-align:center;outline:none;}
-#zb{background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;font-family:'Courier New',monospace;font-size:8px;letter-spacing:3px;padding:10px 14px;cursor:pointer;}
-
-@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-.fadein{animation:fadein .5s ease}
+.zo-title{font-size:7px;letter-spacing:.4em;opacity:.4;text-transform:uppercase;}
+#zi{background:transparent;border:1px solid rgba(255,255,255,.15);color:#fff;font-size:18px;letter-spacing:.3em;padding:10px 16px;width:140px;text-align:center;outline:none;}
+#zb{background:transparent;border:1px solid rgba(255,255,255,.15);color:#fff;font-size:6px;letter-spacing:.3em;padding:10px 14px;cursor:pointer;text-transform:uppercase;}
 </style>
 </head>
 <body data-theme="dark">
 <div id="app">
   <div id="hdr">
-    <div class="hdr-l" id="brand" onclick="togglePalette()">&#9992; &nbsp; OVERHEAD</div>
-    <div class="hdr-c" id="loc">LOCATING...</div>
+    <div class="hdr-brand" id="brand" onclick="togglePalette()">&#9992; &nbsp; OVERHEAD</div>
+    <div class="hdr-loc" id="loc">LOCATING</div>
     <div class="hdr-r">
-      <div class="demo-btn" id="demobtn" onclick="toggleDemo()">DEMO</div>
+      <button class="ctrl-btn" id="artbtn" onclick="toggleArt()">PRINT</button>
+      <button class="ctrl-btn" id="demobtn" onclick="toggleDemo()">DEMO</button>
       <div class="hdr-time" id="clk">--:--:--</div>
     </div>
   </div>
-  <!-- Color palette -->
+
+  <!-- Palette -->
   <div id="palette">
-    <div class="swatch active" data-theme="dark"   style="background:#0A0F14" title="Midnight"></div>
-    <div class="swatch"        data-theme="red"    style="background:#991B1B" title="Portrait"></div>
-    <div class="swatch"        data-theme="navy"   style="background:#1E3A5F" title="Navy"></div>
-    <div class="swatch"        data-theme="forest" style="background:#1A3A2A" title="Forest"></div>
-    <div class="swatch"        data-theme="slate"  style="background:#1F2937" title="Slate"></div>
-    <div class="swatch"        data-theme="plum"   style="background:#3B1F44" title="Plum"></div>
-    <div class="swatch"        data-theme="chalk"  style="background:#F5F0E8" title="Gallery"></div>
+    <div class="swatch act"  data-t="dark"       style="background:#0A0B0D"></div>
+    <div class="swatch"      data-t="portrait"   style="background:#8B1A1A"></div>
+    <div class="swatch"      data-t="nightflight"style="background:#0A1628"></div>
+    <div class="swatch"      data-t="dusk"       style="background:#16102A"></div>
+    <div class="swatch"      data-t="sienna"     style="background:#1A0F08"></div>
+    <div class="swatch"      data-t="forest"     style="background:#0C1C10"></div>
+    <div class="swatch"      data-t="chalk"      style="background:#F0EAE0;border-color:#ccc;"></div>
   </div>
+
   <div id="rows">
-    <div class="prow" id="r0"><div class="pempty">ACQUIRING SIGNAL...</div></div>
-    <div class="prow" id="r1"><div class="pempty">&#8212;</div></div>
-    <div class="prow" id="r2"><div class="pempty">&#8212;</div></div>
+    <div class="prow" id="r0"><div class="pempty">Acquiring signal</div></div>
+    <div class="prow" id="r1"><div class="pempty">&mdash;</div></div>
+    <div class="prow" id="r2"><div class="pempty">&mdash;</div></div>
   </div>
+
   <div id="ftr">
-    <span id="ftr-loc">&#8212;</span>
-    <span id="ftr-sig">ADS-B &middot; AIRLABS</span>
-    <span id="ftr-upd">&#8212;</span>
+    <span id="ftr-l">&mdash;</span>
+    <span id="ftr-c">ADS&#8209;B &middot; AIRLABS</span>
+    <span id="ftr-r">&mdash;</span>
   </div>
 </div>
+
 <div id="zo">
-  <div style="font-size:8px;letter-spacing:5px;opacity:.4;">&#9992; &nbsp; OVERHEAD</div>
-  <div style="font-size:9px;letter-spacing:5px;opacity:.65;margin-bottom:4px;">ENTER YOUR ZIP CODE</div>
+  <div class="zo-title">&#9992; &nbsp; Overhead</div>
+  <div style="font-size:8px;letter-spacing:.3em;opacity:.55;margin-bottom:4px;">Enter your ZIP code</div>
   <div style="display:flex;gap:8px;">
     <input id="zi" type="text" inputmode="numeric" maxlength="5" placeholder="49315"/>
-    <button id="zb">GO</button>
+    <button id="zb">Go</button>
   </div>
-  <div id="ze" style="font-size:7px;letter-spacing:3px;color:#ef4444;min-height:12px;"></div>
+  <div id="ze" style="font-size:7px;letter-spacing:.2em;color:#ef4444;min-height:12px;"></div>
 </div>
+
 <script>
 'use strict';
+const AIRLABS='7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
+const RADII=[10,25,50,100];
 
-const AIRLABS = '7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
-const RADII   = [10, 25, 50, 100];
-
-// -- Airlines with livery images --
-const HAS_LIVERY = new Set([
-  'AAL','AAY','ACA','AFR','ANA','ANZ','ASA','BAW','CPA','DAL',
+const HAS_LIVERY=new Set(['AAL','AAY','ACA','AFR','ANA','ANZ','ASA','BAW','CPA','DAL',
   'DLH','ENY','ETD','EZY','FFT','FIN','GJS','IBE','JAL','JBU',
   'KAL','KLM','NKS','QFA','QTR','RPA','RYR','SAS','SIA','SKW',
-  'SWA','THY','UAE','UAL','WJA'
-]);
+  'SWA','THY','UAE','UAL','WJA']);
 
-// -- ADS-B type ? livery file type --
-const TMAP = {
+const TMAP={
   B732:'73H',B733:'73H',B734:'73H',B735:'73H',B736:'73H',
   B737:'73H',B738:'738',B739:'739',B73W:'73H',
   B37M:'73H',B38M:'738',B39M:'739',B3XM:'73H',
@@ -167,63 +199,70 @@ const TMAP = {
   CR7W:'CR7',CR9W:'CR9',
 };
 
-const AP = {
-  ATL:'Atlanta',BOS:'Boston',CLT:'Charlotte',DEN:'Denver',DFW:'Dallas/Ft Worth',
-  DTW:'Detroit',EWR:'Newark',IAD:'Dulles',IAH:'Houston',JFK:'New York JFK',
-  LAX:'Los Angeles',LGA:'New York LGA',MCO:'Orlando',MIA:'Miami',
-  MDW:'Midway',MSP:'Minneapolis',ORD:'Chicago',PHL:'Philadelphia',
+const AP={
+  ATL:'Atlanta',BOS:'Boston',CLT:'Charlotte',DEN:'Denver',DFW:'Dallas',
+  DTW:'Detroit',EWR:'Newark',IAD:'Dulles',IAH:'Houston',JFK:'New York',
+  LAX:'Los Angeles',LGA:'New York',MCO:'Orlando',MIA:'Miami',
+  MDW:'Chicago',MSP:'Minneapolis',ORD:'Chicago',PHL:'Philadelphia',
   PHX:'Phoenix',SEA:'Seattle',SFO:'San Francisco',SLC:'Salt Lake City',
   AUS:'Austin',BNA:'Nashville',BWI:'Baltimore',CVG:'Cincinnati',
   CLE:'Cleveland',CMH:'Columbus',DCA:'Washington',GRR:'Grand Rapids',
   IND:'Indianapolis',MCI:'Kansas City',MEM:'Memphis',MKE:'Milwaukee',
-  MSY:'New Orleans',OMA:'Omaha',PIT:'Pittsburgh',RDU:'Raleigh-Durham',
+  MSY:'New Orleans',OMA:'Omaha',PIT:'Pittsburgh',RDU:'Raleigh',
   RSW:'Fort Myers',SAN:'San Diego',SAT:'San Antonio',STL:'St Louis',
   TPA:'Tampa',TUL:'Tulsa',TVC:'Traverse City',LAS:'Las Vegas',
-  PDX:'Portland',FLL:'Fort Lauderdale',BUF:'Buffalo',LEX:'Lexington',
-  YYZ:'Toronto',YUL:'Montreal',LHR:'London Heathrow',CDG:'Paris CDG',
-  FRA:'Frankfurt',AMS:'Amsterdam',DXB:'Dubai',NRT:'Tokyo Narita',
+  PDX:'Portland',FLL:'Fort Lauderdale',BUF:'Buffalo',
+  YYZ:'Toronto',YUL:'Montreal',LHR:'London',CDG:'Paris',
+  FRA:'Frankfurt',AMS:'Amsterdam',DXB:'Dubai',NRT:'Tokyo',
+  SIN:'Singapore',SYD:'Sydney',ICN:'Seoul',HKG:'Hong Kong',
 };
 
-const FTYPES = {
+const FTYPES={
   B738:'Boeing 737-800',B739:'Boeing 737-900',
-  B37M:'Boeing 737 MAX 7',B38M:'Boeing 737 MAX 8',B39M:'Boeing 737 MAX 9',
+  B37M:'737 MAX 7',B38M:'737 MAX 8',B39M:'737 MAX 9',
   A319:'Airbus A319',A320:'Airbus A320',A321:'Airbus A321',
   A20N:'Airbus A320neo',A21N:'Airbus A321neo',A19N:'Airbus A220',
   B752:'Boeing 757-200',B763:'Boeing 767-300',
   B772:'Boeing 777-200',B77W:'Boeing 777-300ER',
   B788:'Boeing 787-8',B789:'Boeing 787-9',B78X:'Boeing 787-10',
   B744:'Boeing 747-400',A332:'Airbus A330-200',A333:'Airbus A330-300',
-  A359:'Airbus A350-900',A35K:'Airbus A350-1000',A380:'Airbus A380',
-  A388:'Airbus A380-800',E175:'Embraer E175',E75L:'Embraer E175',
-  E190:'Embraer E190',CRJ7:'Bombardier CRJ-700',CRJ9:'Bombardier CRJ-900',
+  A359:'Airbus A350-900',A35K:'Airbus A350-1000',
+  A380:'Airbus A380',A388:'Airbus A380-800',
+  E175:'Embraer E175',E75L:'Embraer E175',E190:'Embraer E190',
+  CRJ7:'CRJ-700',CRJ9:'CRJ-900',
 };
 
-const ALNAMES = {
+const ALNAMES={
   DAL:'Delta Air Lines',UAL:'United Airlines',AAL:'American Airlines',
   SWA:'Southwest Airlines',AAY:'Allegiant Air',NKS:'Spirit Airlines',
   ASA:'Alaska Airlines',JBU:'JetBlue Airways',FFT:'Frontier Airlines',
   ENY:'Envoy Air',GJS:'GoJet Airlines',RPA:'Republic Airways',
-  SKW:'SkyWest Airlines',PDT:'Piedmont Airlines',
-  ACA:'Air Canada',WJA:'WestJet',DLH:'Lufthansa',
-  BAW:'British Airways',AFR:'Air France',KLM:'KLM Royal Dutch Airlines',
-  IBE:'Iberia',EZY:'easyJet',RYR:'Ryanair',SAS:'Scandinavian Airlines',
-  FIN:'Finnair',THY:'Turkish Airlines',UAE:'Emirates',
-  QTR:'Qatar Airways',ETD:'Etihad Airways',SIA:'Singapore Airlines',
-  CPA:'Cathay Pacific',QFA:'Qantas',ANZ:'Air New Zealand',
-  KAL:'Korean Air',JAL:'Japan Airlines',ANA:'All Nippon Airways',
+  SKW:'SkyWest Airlines',ACA:'Air Canada',WJA:'WestJet',
+  DLH:'Lufthansa',BAW:'British Airways',AFR:'Air France',
+  KLM:'KLM',IBE:'Iberia',EZY:'easyJet',RYR:'Ryanair',
+  SAS:'Scandinavian Airlines',FIN:'Finnair',THY:'Turkish Airlines',
+  UAE:'Emirates',QTR:'Qatar Airways',ETD:'Etihad Airways',
+  SIA:'Singapore Airlines',CPA:'Cathay Pacific',QFA:'Qantas',
+  ANZ:'Air New Zealand',KAL:'Korean Air',JAL:'Japan Airlines',
+  ANA:'All Nippon Airways',
 };
 
-function icao(cs){ return (cs||'').replace(/\d.*$/,'').toUpperCase(); }
-function livSrc(al,tc){ const t=TMAP[tc]; return (HAS_LIVERY.has(al)&&t) ? `/liveries/${al}_${t}.webp` : null; }
+// Demo planes — real aircraft, iconic routes
+const DEMO=[
+  {cs:'DAL',tc:'A21N',name:'Delta Air Lines',type:'Airbus A321neo',from:'MSP',to:'ATL'},
+  {cs:'AFR',tc:'A388',name:'Air France',    type:'Airbus A380',   from:'CDG',to:'JFK'},
+  {cs:'UAE',tc:'A388',name:'Emirates',      type:'Airbus A380',   from:'DXB',to:'ORD'},
+];
 
-// -- State --
-let uLat=null, uLon=null, last=[], demoMode=false;
-const RC={};
-let rQ=Promise.resolve();
+function al(cs){return(cs||'').replace(/\d.*$/,'').toUpperCase();}
+function livSrc(icao,tc){const t=TMAP[tc];return(HAS_LIVERY.has(icao)&&t)?`/liveries/${icao}_${t}.webp`:null;}
 
-function fetchT(url,ms){
+let uLat=null,uLon=null,last=[],demoMode=false;
+const RC={};let rQ=Promise.resolve();
+
+function fetchT(u,ms){
   const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||9000);
-  return fetch(url,{signal:c.signal}).finally(()=>clearTimeout(t));
+  return fetch(u,{signal:c.signal}).finally(()=>clearTimeout(t));
 }
 function hav(a1,b1,a2,b2){
   if(!a2||!b2)return Infinity;
@@ -238,203 +277,158 @@ function brng(a1,b1,a2,b2){
 }
 function cmp(d){return['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(d/22.5)%16];}
 
-// -- Route lookup --
 async function lookupRoute(cs){
-  if(RC[cs]!==undefined)return;
-  RC[cs]=null;
+  if(RC[cs]!==undefined)return;RC[cs]=null;
   rQ=rQ.then(()=>new Promise(r=>setTimeout(r,1800))).then(async()=>{
-    try{
-      const r=await fetchT(`https://airlabs.co/api/v9/flight?flight_icao=${encodeURIComponent(cs)}&api_key=${AIRLABS}`,9000);
-      if(r.ok){const d=await r.json();const f=d?.response;if(f?.dep_iata&&f?.arr_iata){RC[cs]={from:f.dep_iata,to:f.arr_iata};render(last);}}
-    }catch(e){}
+    try{const r=await fetchT(`https://airlabs.co/api/v9/flight?flight_icao=${encodeURIComponent(cs)}&api_key=${AIRLABS}`,9000);
+      if(r.ok){const d=await r.json();const f=d?.response;if(f?.dep_iata&&f?.arr_iata){RC[cs]={from:f.dep_iata,to:f.arr_iata};render(last);}}}catch(e){}
   });
 }
 
-// -- Fetch with auto-expanding radius, livery-only filter --
 async function fetchFlights(){
   if(!uLat||demoMode)return;
   const la=uLat.toFixed(4),lo=uLon.toFixed(4);
-  let best=[], usedRadius=RADII[0];
-
+  let best=[],usedR=RADII[0];
   for(const r of RADII){
-    usedRadius=r;
+    usedR=r;
     try{
-      const urls=[
-        `/.netlify/functions/flights?lat=${la}&lon=${lo}&radius=${r}`,
-        `https://api.adsb.lol/v2/lat/${la}/lon/${lo}/dist/${r}`,
-      ];
+      const urls=[`/.netlify/functions/flights?lat=${la}&lon=${lo}&radius=${r}`,
+                  `https://api.adsb.lol/v2/lat/${la}/lon/${lo}/dist/${r}`];
       let resp=null;
       for(const u of urls){try{const t=await fetchT(u,10000);if(t.ok){resp=t;break;}}catch(e){continue;}}
       if(!resp)continue;
       const d=await resp.json();
-
-      const ac=(d.ac||[])
-        .filter(a=>{
-          if(!a.flight)return false;
-          const cs=a.flight.trim().toUpperCase();
-          if(!/^[A-Z]{2,3}\d/.test(cs)||/^N\d/.test(cs))return false;
-          // Only keep flights that have a livery image
-          const al=icao(cs), tc=(a.t||'').toUpperCase();
-          return livSrc(al,tc)!==null;
-        })
-        .map(a=>({...a,_d:hav(uLat,uLon,a.lat,a.lon)}))
-        .filter(a=>isFinite(a._d))
-        .sort((a,b)=>a._d-b._d)
-        .slice(0,3);
-
-      if(ac.length>0){ best=ac; break; }
+      const ac=(d.ac||[]).filter(a=>{
+        if(!a.flight)return false;
+        const cs=a.flight.trim().toUpperCase();
+        if(!/^[A-Z]{2,3}\d/.test(cs)||/^N\d/.test(cs))return false;
+        return livSrc(al(cs),(a.t||'').toUpperCase())!==null;
+      }).map(a=>({...a,_d:hav(uLat,uLon,a.lat,a.lon)}))
+        .filter(a=>isFinite(a._d)).sort((a,b)=>a._d-b._d).slice(0,3);
+      if(ac.length>0){best=ac;break;}
     }catch(e){}
   }
-
-  // Seed routes
-  best.forEach(a=>{
-    if(a.dep_iata&&a.arr_iata){const cs=a.flight.trim().toUpperCase();if(RC[cs]===undefined)RC[cs]={from:a.dep_iata,to:a.arr_iata};}
-  });
-
-  document.getElementById('rlbl'||'ftr-sig').textContent=`ADS-B &middot; ${usedRadius} MI RADIUS`;
-  document.getElementById('ftr-upd').textContent=new Date().toLocaleTimeString('en-US',{hour12:false});
-  last=best; render(best);
+  best.forEach(a=>{if(a.dep_iata&&a.arr_iata){const cs=a.flight.trim().toUpperCase();if(RC[cs]===undefined)RC[cs]={from:a.dep_iata,to:a.arr_iata};}});
+  document.getElementById('ftr-c').textContent='ADS\u2011B \u00B7 '+usedR+' MI RADIUS';
+  document.getElementById('ftr-r').textContent=new Date().toLocaleTimeString('en-US',{hour12:false});
+  last=best;render(best);
   best.forEach(a=>{const cs=a.flight.trim().toUpperCase();if(RC[cs]===undefined)lookupRoute(cs);});
 }
 
-// -- Demo mode --
-const DEMO_PLANES = [
-  { cs:'DAL0001', icao:'DAL', tc:'A21N', name:'Delta Air Lines',   type:'Airbus A321neo',     from:'MSP', to:'ATL' },
-  { cs:'AFR0001', icao:'AFR', tc:'A388', name:'Air France',        type:'Airbus A380',        from:'CDG', to:'JFK' },
-  { cs:'UAE0001', icao:'UAE', tc:'B77W', name:'Emirates',          type:'Boeing 777-300ER',   from:'DXB', to:'ORD' },
-];
-
-function renderDemo(){
-  DEMO_PLANES.forEach((p,i)=>{
-    const row=document.getElementById('r'+i);
-    const src=`/liveries/${p.icao}_${TMAP[p.tc]||'320'}.webp`;
-    const fromCity=AP[p.from]||p.from, toCity=AP[p.to]||p.to;
-    row.style.opacity='1';
-    row.style.borderLeft='none';
-    row.classList.add('fadein');
-    row.innerHTML=buildRow(src, p.cs, p.name, p.type, p.from, p.to, fromCity, toCity, 'ART DEMO', '#F5A623');
-  });
-  document.getElementById('ftr-loc').textContent='ART DEMO MODE';
-}
-
-function buildRow(src, cs, alName, typeName, from, to, fromCity, toCity, distLabel, dotColor){
-  const routeStr = from&&to ? `${from} &nbsp;&#8212;&nbsp; ${to}` : '';
-  const cityStr  = fromCity&&toCity ? `${fromCity} &rarr; ${toCity}` : '';
+function buildRow(src,flight,alName,typeName,from,to,distLabel,dotColor){
+  const fromCity=AP[from]||from, toCity=AP[to]||to;
+  const routeStr=from&&to?`${from}&ensp;&mdash;&ensp;${to}`:'';
+  const cityStr=from&&to?`${fromCity}&ensp;&rarr;&ensp;${toCity}`:'';
+  const fbLogo=`/logos/${flight.replace(/\d.*/,'')}_logo-white.png`;
   return `
     <div class="pimg">
-      <img class="livery" src="${src}" alt="${cs}"
-           onerror="this.className='fallback';this.src='/logos/${cs.replace(/\d.*/,'')||'DAL'}_logo-white.png';this.onerror=null;"/>
+      <img class="livery" src="${src}" alt="${flight}"
+           onerror="this.className='fallback';this.src='${fbLogo}';this.onerror=null;"/>
     </div>
     <div class="pcap">
-      <div class="cap-flight">${cs}</div>
+      <div class="cap-flight">${flight}</div>
       <div class="cap-airline">${alName}</div>
-      <div class="cap-type">${typeName}</div>
-      <hr class="cap-divider"/>
+      ${typeName?`<div class="cap-type">${typeName}</div>`:''}
+      <hr class="cap-rule"/>
       ${routeStr?`<div class="cap-route">${routeStr}</div>`:''}
       ${cityStr ?`<div class="cap-cities">${cityStr}</div>`:''}
-      <div class="cap-dist" style="color:${dotColor}">&#9679;&ensp;${distLabel}</div>
+      ${distLabel?`<div class="cap-dist" style="color:${dotColor}">${distLabel}</div>`:''}
     </div>`;
 }
 
-// -- Render live flights --
+function renderDemo(){
+  DEMO.forEach((p,i)=>{
+    const row=document.getElementById('r'+i);
+    const t=TMAP[p.tc]||'320';
+    const src=`/liveries/${p.cs}_${t}.webp`;
+    row.style.opacity='1';row.style.borderLeft='none';
+    row.innerHTML=buildRow(src,`${p.cs} \u2014 ${p.type}`,p.name,p.type,p.from,p.to,'','');
+  });
+  document.getElementById('ftr-l').textContent='Art Demo Mode';
+  document.getElementById('ftr-c').textContent='Overhead';
+}
+
 function render(ac){
   if(demoMode)return;
   for(let i=0;i<3;i++){
     const row=document.getElementById('r'+i);
     const a=ac[i];
-    if(!a){row.innerHTML='<div class="pempty">&#8212;</div>';row.style.opacity='';row.style.borderLeft='';continue;}
-    const cs    = a.flight.trim().toUpperCase();
-    const al    = icao(cs);
-    const tc    = (a.t||'').toUpperCase();
-    const route = RC[cs];
-    const distMi= a._d.toFixed(1);
-    const dir   = uLat&&a.lat ? ' '+cmp(brng(uLat,uLon,a.lat,a.lon)) : '';
-    const distLabel = distMi+' MI'+(a._d<=10?'':dir);
-    const dotColor  = a._d<=10?'#50C878':a._d<=25?'#F5A623':a._d<=50?'#C4821C':'#888';
-    const from  = route?.from||'', to=route?.to||'';
-    const fromC = AP[from]||from, toC=AP[to]||to;
-    const src   = livSrc(al,tc)||'';
-    row.style.opacity   = a._d<=10?'1':a._d<=25?'0.9':a._d<=50?'0.75':'0.55';
-    row.style.borderLeft= 'none';
-    row.classList.add('fadein');
-    row.innerHTML=buildRow(src, cs, ALNAMES[al]||al, FTYPES[tc]||tc||'', from, to, fromC, toC, distLabel, dotColor);
-  }
-
-  // Footer
-  if(uLat&&ac.length){
-    document.getElementById('ftr-loc').textContent=
-      uLat.toFixed(4)+'&#176; N &nbsp;'+Math.abs(uLon).toFixed(4)+'&#176; W &nbsp;&middot;&nbsp; '+ac.length+' AIRCRAFT';
+    if(!a){row.innerHTML='<div class="pempty">&mdash;</div>';row.style.opacity='';row.style.borderLeft='';continue;}
+    const cs=a.flight.trim().toUpperCase();
+    const icao=al(cs),tc=(a.t||'').toUpperCase();
+    const route=RC[cs];
+    const d=a._d,from=route?.from||'',to=route?.to||'';
+    const dot=d<=10?'#6EE7B7':d<=25?'#D4C5A0':d<=50?'#A89070':'#666';
+    const distLabel=d<=10?`${d.toFixed(1)} mi overhead`
+                   :d<=25?`${d.toFixed(1)} mi ${cmp(brng(uLat,uLon,a.lat,a.lon))}`
+                   :`${d.toFixed(1)} mi ${cmp(brng(uLat,uLon,a.lat,a.lon))}`;
+    row.style.opacity=d<=10?'1':d<=25?'0.92':d<=50?'0.76':'0.55';
+    row.style.borderLeft='none';
+    row.innerHTML=buildRow(livSrc(icao,tc),cs,ALNAMES[icao]||icao,FTYPES[tc]||tc||'',from,to,distLabel,dot);
+    if(uLat&&ac.length)document.getElementById('ftr-l').textContent=`${uLat.toFixed(4)}\u00b0 N &nbsp;${Math.abs(uLon).toFixed(4)}\u00b0 W &nbsp;\u00b7&nbsp; ${ac.length} aircraft`;
   }
 }
 
-// -- Color palette --
-function togglePalette(){
-  const p=document.getElementById('palette');
-  p.classList.toggle('show');
-}
+// -- Controls --
+function togglePalette(){document.getElementById('palette').classList.toggle('show');}
 document.addEventListener('click',e=>{
   const p=document.getElementById('palette');
-  if(!p.contains(e.target)&&e.target.id!=='brand') p.classList.remove('show');
+  if(!p.contains(e.target)&&e.target.id!=='brand')p.classList.remove('show');
 });
 document.querySelectorAll('.swatch').forEach(s=>{
   s.addEventListener('click',()=>{
-    const t=s.dataset.theme;
+    const t=s.dataset.t;
     document.body.setAttribute('data-theme',t);
-    document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active'));
-    s.classList.add('active');
+    document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('act'));
+    s.classList.add('act');
     localStorage.setItem('oh_theme',t);
   });
 });
-// Restore saved theme
-const savedTheme=localStorage.getItem('oh_theme');
-if(savedTheme){
-  document.body.setAttribute('data-theme',savedTheme);
-  document.querySelectorAll('.swatch').forEach(s=>{
-    s.classList.toggle('active',s.dataset.theme===savedTheme);
-  });
-}
+const st=localStorage.getItem('oh_theme');
+if(st){document.body.setAttribute('data-theme',st);document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('act',s.dataset.t===st));}
 
-// -- Demo toggle --
+function toggleArt(){
+  document.body.classList.toggle('artfx');
+  document.getElementById('artbtn').classList.toggle('on',document.body.classList.contains('artfx'));
+  localStorage.setItem('oh_art',document.body.classList.contains('artfx')?'1':'0');
+}
+if(localStorage.getItem('oh_art')==='1'){document.body.classList.add('artfx');document.getElementById('artbtn').classList.add('on');}
+
 function toggleDemo(){
   demoMode=!demoMode;
-  const btn=document.getElementById('demobtn');
-  btn.classList.toggle('on',demoMode);
-  if(demoMode) renderDemo();
-  else render(last);
+  document.getElementById('demobtn').classList.toggle('on',demoMode);
+  demoMode?renderDemo():render(last);
 }
 
 // -- Location --
 function showZip(){
   document.getElementById('zo').classList.add('show');
   const zi=document.getElementById('zi'),zb=document.getElementById('zb'),ze=document.getElementById('ze');
-  const go=()=>{const z=zi.value.trim();if(!/^\d{5}$/.test(z)){ze.textContent='ENTER 5-DIGIT ZIP';return;}ze.textContent='';document.getElementById('zo').classList.remove('show');resolveZip(z);};
-  zb.onclick=go;zi.onkeydown=e=>{if(e.key==='Enter')go();};
-  setTimeout(()=>zi.focus(),100);
+  const go=()=>{const z=zi.value.trim();if(!/^\d{5}$/.test(z)){ze.textContent='Enter a valid ZIP';return;}ze.textContent='';document.getElementById('zo').classList.remove('show');resolveZip(z);};
+  zb.onclick=go;zi.onkeydown=e=>{if(e.key==='Enter')go();};setTimeout(()=>zi.focus(),100);
 }
 async function resolveZip(z){
-  document.getElementById('loc').textContent='LOCATING...';
+  document.getElementById('loc').textContent='Locating...';
   try{
-    const r=await fetchT(`https://api.zippopotam.us/us/${z}`,6000);
-    if(!r.ok)throw 0;
+    const r=await fetchT(`https://api.zippopotam.us/us/${z}`,6000);if(!r.ok)throw 0;
     const d=await r.json();
     uLat=parseFloat(d.places[0].latitude);uLon=parseFloat(d.places[0].longitude);
-    document.getElementById('loc').textContent=d.places[0]['place name'].toUpperCase()+', '+d.places[0]['state abbreviation'];
+    document.getElementById('loc').textContent=d.places[0]['place name']+', '+d.places[0]['state abbreviation'];
     localStorage.setItem('oh_ll',JSON.stringify([uLat,uLon]));localStorage.setItem('oh_zip',z);
     fetchFlights();
-  }catch(e){document.getElementById('loc').textContent='ZIP ERROR';showZip();}
+  }catch(e){showZip();}
 }
 function initLoc(){
   const s=localStorage.getItem('oh_ll')||localStorage.getItem('flightboard_loc');
-  if(s){try{[uLat,uLon]=JSON.parse(s);document.getElementById('loc').textContent=Math.abs(uLat).toFixed(3)+'&#176; N, '+Math.abs(uLon).toFixed(3)+'&#176; W';fetchFlights();}catch(e){uLat=null;}}
+  if(s){try{[uLat,uLon]=JSON.parse(s);document.getElementById('loc').textContent=Math.abs(uLat).toFixed(4)+'\u00b0 N, '+Math.abs(uLon).toFixed(4)+'\u00b0 W';fetchFlights();}catch(e){uLat=null;}}
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(
-      p=>{uLat=p.coords.latitude;uLon=p.coords.longitude;localStorage.setItem('oh_ll',JSON.stringify([uLat,uLon]));document.getElementById('loc').textContent=uLat.toFixed(3)+'&#176; N, '+Math.abs(uLon).toFixed(3)+'&#176; W';fetchFlights();},
+      p=>{uLat=p.coords.latitude;uLon=p.coords.longitude;localStorage.setItem('oh_ll',JSON.stringify([uLat,uLon]));document.getElementById('loc').textContent=uLat.toFixed(4)+'\u00b0 N, '+Math.abs(uLon).toFixed(4)+'\u00b0 W';fetchFlights();},
       ()=>{if(!uLat){const z=localStorage.getItem('oh_zip');if(z)resolveZip(z);else showZip();}},
       {timeout:8000,maximumAge:300000}
     );
   }else if(!uLat)showZip();
 }
-
 function tick(){document.getElementById('clk').textContent=new Date().toLocaleTimeString('en-US',{hour12:false});}
 setInterval(tick,1000);tick();
 setInterval(fetchFlights,30000);
