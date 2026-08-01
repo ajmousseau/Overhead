@@ -5,169 +5,161 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>OVERHEAD</title>
 <style>
-/* -- Palette -- */
-:root{ --bg:#0A0B0D; --fg:#EEE8DC; --fg2:rgba(238,232,220,0.38); --line:rgba(238,232,220,0.07); }
-[data-theme="portrait"] { --bg:#8B1A1A; --fg:#F5EDDF; --fg2:rgba(245,237,223,0.45); --line:rgba(245,237,223,0.1); }
-[data-theme="nightflight"]{ --bg:#0A1628; --fg:#D8E4F0; --fg2:rgba(216,228,240,0.38); --line:rgba(216,228,240,0.08); }
-[data-theme="dusk"]  { --bg:#16102A; --fg:#E8DCFF; --fg2:rgba(232,220,255,0.38); --line:rgba(232,220,255,0.08); }
-[data-theme="sienna"]{ --bg:#1A0F08; --fg:#F0E4D0; --fg2:rgba(240,228,208,0.4); --line:rgba(240,228,208,0.08); }
-[data-theme="forest"]{ --bg:#0C1C10; --fg:#D8EDD8; --fg2:rgba(216,237,216,0.38); --line:rgba(216,237,216,0.08); }
-[data-theme="chalk"] { --bg:#F0EAE0; --fg:#1A1614; --fg2:rgba(26,22,20,0.4); --line:rgba(26,22,20,0.07); }
+/* -- Poster palettes -- */
+:root{ --bg:#9B1B1B; --fg:#F7F0E3; --fg2:rgba(247,240,227,0.55); --line:rgba(247,240,227,0.14); }
+[data-theme="midnight"]{ --bg:#10141C; --fg:#EFE9DC; --fg2:rgba(239,233,220,0.5); --line:rgba(239,233,220,0.1); }
+[data-theme="navy"]    { --bg:#1B2B4A; --fg:#F0EADB; --fg2:rgba(240,234,219,0.55); --line:rgba(240,234,219,0.12); }
+[data-theme="dusk"]    { --bg:#3E3552; --fg:#F5EDE0; --fg2:rgba(245,237,224,0.55); --line:rgba(245,237,224,0.12); }
+[data-theme="marine"]  { --bg:#0F3B3A; --fg:#EFEADF; --fg2:rgba(239,234,223,0.55); --line:rgba(239,234,223,0.12); }
+[data-theme="mustard"] { --bg:#B8860B; --fg:#1E1810; --fg2:rgba(30,24,16,0.6); --line:rgba(30,24,16,0.15); }
+[data-theme="cream"]   { --bg:#F2ECDF; --fg:#20180F; --fg2:rgba(32,24,15,0.55); --line:rgba(32,24,15,0.12); }
 
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--fg);transition:background .5s,color .4s;}
-body, button, input { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--fg);transition:background .6s,color .5s;}
+body{font-family:Georgia,'Times New Roman',serif;}
 
-#app{height:100vh;display:flex;flex-direction:column;padding:16px 40px 12px;}
+#poster{
+  height:100vh;display:flex;flex-direction:column;
+  padding:clamp(20px,3.5vh,44px) clamp(28px,4vw,64px) clamp(14px,2.2vh,28px);
+}
 
-/* -- Header -- */
-#hdr{display:flex;justify-content:space-between;align-items:center;padding-bottom:11px;border-bottom:1px solid var(--line);flex-shrink:0;}
-.hdr-brand{font-size:8px;letter-spacing:.35em;font-weight:300;opacity:.35;cursor:pointer;user-select:none;text-transform:uppercase;}
-.hdr-loc{font-size:8px;letter-spacing:.2em;font-weight:300;color:var(--fg2);}
-.hdr-r{display:flex;align-items:center;gap:14px;}
-.hdr-time{font-size:8px;letter-spacing:.18em;font-weight:300;opacity:.22;font-variant-numeric:tabular-nums;}
-.ctrl-btn{font-size:6px;letter-spacing:.3em;font-weight:400;opacity:.28;cursor:pointer;padding:3px 8px;border:1px solid var(--line);background:none;color:var(--fg);text-transform:uppercase;transition:opacity .2s;}
-.ctrl-btn:hover,.ctrl-btn.on{opacity:.65;border-color:var(--fg2);}
+/* -- Masthead -- */
+#mast{
+  display:flex;justify-content:space-between;align-items:baseline;
+  flex-shrink:0;
+}
+.mast-title{
+  font-size:clamp(10px,1.1vw,15px);
+  letter-spacing:.45em;font-weight:400;
+  cursor:pointer;user-select:none;
+  text-transform:uppercase;
+}
+.mast-ctrl{display:flex;gap:14px;align-items:baseline;}
+.mbtn{
+  font-family:Georgia,serif;background:none;border:none;color:var(--fg2);
+  font-size:clamp(7px,.65vw,9px);letter-spacing:.3em;cursor:pointer;
+  text-transform:uppercase;padding:2px 0;border-bottom:1px solid transparent;
+}
+.mbtn:hover,.mbtn.on{color:var(--fg);border-bottom-color:var(--fg2);}
 
 /* -- Palette popup -- */
-#palette{display:none;position:fixed;top:44px;left:40px;z-index:200;gap:7px;padding:8px 10px;background:rgba(0,0,0,.7);backdrop-filter:blur(12px);}
+#palette{display:none;position:fixed;top:clamp(48px,7vh,80px);left:clamp(28px,4vw,64px);z-index:300;gap:8px;padding:10px 12px;background:rgba(0,0,0,.55);backdrop-filter:blur(14px);border-radius:2px;}
 #palette.show{display:flex;}
-.swatch{width:24px;height:24px;border-radius:2px;cursor:pointer;border:2px solid transparent;flex-shrink:0;}
-.swatch:hover,.swatch.act{border-color:var(--fg);}
+.sw{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.15);}
+.sw:hover,.sw.act{border-color:#fff;}
 
-/* -- Rows -- */
-#rows{flex:1;display:flex;flex-direction:column;min-height:0;}
-.prow{flex:1;display:flex;align-items:center;border-bottom:1px solid var(--line);overflow:hidden;min-height:0;transition:opacity .7s;}
-.prow:last-child{border-bottom:none;}
+/* -- Plane stage -- */
+#stage{flex:1;display:flex;flex-direction:column;min-height:0;justify-content:space-evenly;padding:clamp(6px,1.5vh,20px) 0;}
 
-/* -- Aircraft — the art -- */
-.pimg{
-  flex:0 0 84%;height:100%;
-  display:flex;align-items:center;
-  padding:10px 32px 10px 0;
-  overflow:hidden;position:relative;
+.slot{
+  flex:1;display:flex;flex-direction:column;
+  justify-content:center;min-height:0;overflow:visible;
+  position:relative;
 }
-.pimg img.livery{
-  width:100%;height:100%;
-  object-fit:contain;object-position:left center;display:block;
-  filter:drop-shadow(0 6px 28px rgba(0,0,0,.3));
-  transition:filter .4s;
+
+/* Plane image — centered, dominant */
+.plane-wrap{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  min-height:0;overflow:visible;
+  padding:0 clamp(10px,2vw,40px);
 }
-/* Art print filter */
-body.artfx .pimg img.livery{
-  filter:drop-shadow(0 6px 28px rgba(0,0,0,.3)) contrast(1.06) saturate(0.78) sepia(0.08) brightness(0.96);
+/* Alternate stagger like the poster */
+.slot:nth-child(1) .plane-wrap{justify-content:flex-start;padding-left:clamp(20px,5vw,90px);}
+.slot:nth-child(2) .plane-wrap{justify-content:flex-end;padding-right:clamp(20px,5vw,90px);}
+.slot:nth-child(3) .plane-wrap{justify-content:center;}
+
+.plane-wrap img.livery{
+  max-width:min(88%, 1400px); max-height:100%;
+  width:auto;height:auto;
+  object-fit:contain;display:block;
+  filter:drop-shadow(0 10px 34px rgba(0,0,0,.32));
 }
-/* Grain overlay for print feel */
-body.artfx .pimg::after{
-  content:'';position:absolute;inset:0;pointer-events:none;opacity:.05;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+body.artfx .plane-wrap img.livery{
+  filter:drop-shadow(0 10px 34px rgba(0,0,0,.28)) contrast(1.05) saturate(0.8) sepia(0.1) brightness(0.97);
+}
+
+/* Caption — one small line under the plane, aligned with the stagger */
+.plane-cap{
+  flex-shrink:0;
+  font-size:clamp(7px,.72vw,10px);
+  letter-spacing:.12em;color:var(--fg2);
+  padding:2px clamp(30px,6vw,110px) 6px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.slot:nth-child(1) .plane-cap{text-align:left;}
+.slot:nth-child(2) .plane-cap{text-align:right;}
+.slot:nth-child(3) .plane-cap{text-align:center;}
+.plane-cap b{font-weight:400;color:var(--fg);letter-spacing:.14em;}
+.plane-cap .sep{margin:0 .6em;opacity:.5;}
+
+/* Print grain */
+body.artfx #stage::after{
+  content:'';position:absolute;inset:0;pointer-events:none;opacity:.045;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
   mix-blend-mode:overlay;
 }
-.pimg img.fallback{height:28%;width:auto;object-fit:contain;margin:auto;opacity:.35;filter:brightness(0) invert(1);}
-.pimg .noimg{font-size:clamp(16px,3.5vw,52px);letter-spacing:.3em;opacity:.05;margin:auto;font-weight:200;}
+#stage{position:relative;}
 
-/* -- Caption — gallery label -- */
-.pcap{
-  flex:1;padding:0 0 0 16px;
-  border-left:1px solid var(--line);
-  display:flex;flex-direction:column;justify-content:center;
-  gap:0;overflow:hidden;
+/* -- Footer — single poster line -- */
+#colophon{
+  flex-shrink:0;padding-top:clamp(8px,1.4vh,16px);
+  border-top:1px solid var(--line);
+  text-align:center;
+  font-size:clamp(6px,.62vw,9px);
+  letter-spacing:.22em;color:var(--fg2);
+  text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.cap-flight{
-  font-size:clamp(11px,1.5vw,19px);
-  letter-spacing:.22em;font-weight:300;
-  white-space:nowrap;line-height:1;
-}
-.cap-airline{
-  font-size:clamp(6px,.6vw,8px);
-  letter-spacing:.25em;font-weight:400;
-  color:var(--fg2);margin-top:5px;
-  text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.cap-type{
-  font-size:clamp(5px,.55vw,7px);
-  letter-spacing:.2em;
-  color:var(--fg2);margin-top:2px;opacity:.55;
+
+.empty-note{
+  text-align:center;font-size:clamp(8px,.8vw,11px);
+  letter-spacing:.35em;color:var(--fg2);opacity:.5;
   text-transform:uppercase;
 }
-.cap-rule{border:none;border-top:1px solid var(--line);margin:clamp(6px,1.2vh,14px) 0;}
-.cap-route{
-  font-size:clamp(10px,1.3vw,16px);
-  letter-spacing:.18em;font-weight:300;white-space:nowrap;
-}
-.cap-cities{
-  font-size:clamp(5px,.55vw,7px);
-  letter-spacing:.15em;color:var(--fg2);
-  margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.cap-dist{
-  font-size:clamp(6px,.7vw,9px);
-  letter-spacing:.2em;margin-top:clamp(5px,1vh,12px);
-  text-transform:uppercase;
-}
-
-/* -- Footer — poster coordinates -- */
-#ftr{
-  flex-shrink:0;padding-top:9px;border-top:1px solid var(--line);
-  display:flex;justify-content:space-between;align-items:baseline;
-  font-size:6px;letter-spacing:.3em;color:var(--fg2);opacity:.45;
-  font-weight:300;text-transform:uppercase;
-}
-
-.pempty{display:flex;align-items:center;width:100%;font-size:7px;letter-spacing:.4em;opacity:.05;font-weight:300;text-transform:uppercase;}
 
 /* -- ZIP -- */
-#zo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:2000;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+#zo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:2000;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:Georgia,serif;}
 #zo.show{display:flex;}
-.zo-title{font-size:7px;letter-spacing:.4em;opacity:.4;text-transform:uppercase;}
-#zi{background:transparent;border:1px solid rgba(255,255,255,.15);color:#fff;font-size:18px;letter-spacing:.3em;padding:10px 16px;width:140px;text-align:center;outline:none;}
-#zb{background:transparent;border:1px solid rgba(255,255,255,.15);color:#fff;font-size:6px;letter-spacing:.3em;padding:10px 14px;cursor:pointer;text-transform:uppercase;}
+.zt{font-size:9px;letter-spacing:.45em;color:rgba(255,255,255,.5);text-transform:uppercase;}
+#zi{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.3);color:#fff;font-family:Georgia,serif;font-size:26px;letter-spacing:.35em;padding:8px 4px;width:170px;text-align:center;outline:none;}
+#zb{background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff;font-family:Georgia,serif;font-size:8px;letter-spacing:.35em;padding:10px 22px;cursor:pointer;text-transform:uppercase;margin-top:6px;}
 </style>
 </head>
-<body data-theme="dark">
-<div id="app">
-  <div id="hdr">
-    <div class="hdr-brand" id="brand" onclick="togglePalette()">&#9992; &nbsp; OVERHEAD</div>
-    <div class="hdr-loc" id="loc">LOCATING</div>
-    <div class="hdr-r">
-      <button class="ctrl-btn" id="artbtn" onclick="toggleArt()">PRINT</button>
-      <button class="ctrl-btn" id="demobtn" onclick="toggleDemo()">DEMO</button>
-      <div class="hdr-time" id="clk">--:--:--</div>
+<body data-theme="portrait">
+<div id="poster">
+  <div id="mast">
+    <div class="mast-title" id="brand" onclick="togglePalette()">Overhead</div>
+    <div class="mast-ctrl">
+      <button class="mbtn" id="artbtn" onclick="toggleArt()">Print</button>
+      <button class="mbtn" id="demobtn" onclick="toggleDemo()">Demo</button>
     </div>
   </div>
 
-  <!-- Palette -->
   <div id="palette">
-    <div class="swatch act"  data-t="dark"       style="background:#0A0B0D"></div>
-    <div class="swatch"      data-t="portrait"   style="background:#8B1A1A"></div>
-    <div class="swatch"      data-t="nightflight"style="background:#0A1628"></div>
-    <div class="swatch"      data-t="dusk"       style="background:#16102A"></div>
-    <div class="swatch"      data-t="sienna"     style="background:#1A0F08"></div>
-    <div class="swatch"      data-t="forest"     style="background:#0C1C10"></div>
-    <div class="swatch"      data-t="chalk"      style="background:#F0EAE0;border-color:#ccc;"></div>
+    <div class="sw act" data-t="portrait" style="background:#9B1B1B"></div>
+    <div class="sw" data-t="midnight" style="background:#10141C"></div>
+    <div class="sw" data-t="navy"     style="background:#1B2B4A"></div>
+    <div class="sw" data-t="dusk"     style="background:#3E3552"></div>
+    <div class="sw" data-t="marine"   style="background:#0F3B3A"></div>
+    <div class="sw" data-t="mustard"  style="background:#B8860B"></div>
+    <div class="sw" data-t="cream"    style="background:#F2ECDF"></div>
   </div>
 
-  <div id="rows">
-    <div class="prow" id="r0"><div class="pempty">Acquiring signal</div></div>
-    <div class="prow" id="r1"><div class="pempty">&mdash;</div></div>
-    <div class="prow" id="r2"><div class="pempty">&mdash;</div></div>
+  <div id="stage">
+    <div class="slot" id="s0"><div class="empty-note">Listening for aircraft</div></div>
+    <div class="slot" id="s1"></div>
+    <div class="slot" id="s2"></div>
   </div>
 
-  <div id="ftr">
-    <span id="ftr-l">&mdash;</span>
-    <span id="ftr-c">ADS&#8209;B &middot; AIRLABS</span>
-    <span id="ftr-r">&mdash;</span>
-  </div>
+  <div id="colophon">&mdash;</div>
 </div>
 
 <div id="zo">
-  <div class="zo-title">&#9992; &nbsp; Overhead</div>
-  <div style="font-size:8px;letter-spacing:.3em;opacity:.55;margin-bottom:4px;">Enter your ZIP code</div>
-  <div style="display:flex;gap:8px;">
-    <input id="zi" type="text" inputmode="numeric" maxlength="5" placeholder="49315"/>
-    <button id="zb">Go</button>
-  </div>
-  <div id="ze" style="font-size:7px;letter-spacing:.2em;color:#ef4444;min-height:12px;"></div>
+  <div class="zt">Overhead</div>
+  <div style="font-size:9px;letter-spacing:.3em;color:rgba(255,255,255,.65);">ENTER YOUR ZIP CODE</div>
+  <input id="zi" type="text" inputmode="numeric" maxlength="5" placeholder="49315"/>
+  <button id="zb">Begin</button>
+  <div id="ze" style="font-size:8px;letter-spacing:.2em;color:#f87171;min-height:12px;"></div>
 </div>
 
 <script>
@@ -176,121 +168,83 @@ const AIRLABS='7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
 const RADII=[10,25,50,100];
 
 const HAS_LIVERY=new Set(['AAL','AAY','ACA','AFR','ANA','ANZ','ASA','BAW','CPA','DAL',
-  'DLH','ENY','ETD','EZY','FFT','FIN','GJS','IBE','JAL','JBU',
-  'KAL','KLM','NKS','QFA','QTR','RPA','RYR','SAS','SIA','SKW',
-  'SWA','THY','UAE','UAL','WJA']);
+'DLH','ENY','ETD','EZY','FFT','FIN','GJS','IBE','JAL','JBU','KAL','KLM','NKS','QFA',
+'QTR','RPA','RYR','SAS','SIA','SKW','SWA','THY','UAE','UAL','WJA']);
 
 const TMAP={
-  B732:'73H',B733:'73H',B734:'73H',B735:'73H',B736:'73H',
-  B737:'73H',B738:'738',B739:'739',B73W:'73H',
-  B37M:'73H',B38M:'738',B39M:'739',B3XM:'73H',
-  B752:'752',B753:'752',B762:'763',B763:'763',B764:'763',
-  B772:'772',B773:'77W',B77L:'772',B77W:'77W',
-  B788:'788',B789:'789',B78X:'78X',
-  B741:'744',B742:'744',B743:'744',B744:'744',B748:'748',
-  A318:'319',A319:'319',A320:'320',A321:'321',
-  A20N:'320',A21N:'321',A19N:'319',A32S:'320',
-  A332:'332',A333:'333',A338:'338',A339:'339',
-  A342:'332',A343:'333',A345:'332',A346:'332',
-  A359:'359',A35K:'35K',A380:'380',A388:'388',
-  E170:'E75',E175:'E75',E75L:'E75',E70:'E75',
-  E190:'E90',E195:'E90',E290:'E90',E295:'E90',
-  CRJ1:'CR9',CRJ2:'CR9',CRJ7:'CR7',CRJ9:'CR9',CRJX:'CR9',
-  CR7W:'CR7',CR9W:'CR9',
-};
+B732:'73H',B733:'73H',B734:'73H',B735:'73H',B736:'73H',B737:'73H',B738:'738',B739:'739',
+B73W:'73H',B37M:'73H',B38M:'738',B39M:'739',B3XM:'73H',B752:'752',B753:'752',
+B762:'763',B763:'763',B764:'763',B772:'772',B773:'77W',B77L:'772',B77W:'77W',
+B788:'788',B789:'789',B78X:'78X',B741:'744',B742:'744',B743:'744',B744:'744',B748:'748',
+A318:'319',A319:'319',A320:'320',A321:'321',A20N:'320',A21N:'321',A19N:'319',A32S:'320',
+A332:'332',A333:'333',A338:'338',A339:'339',A342:'332',A343:'333',A345:'332',A346:'332',
+A359:'359',A35K:'35K',A380:'380',A388:'388',
+E170:'E75',E175:'E75',E75L:'E75',E70:'E75',E190:'E90',E195:'E90',E290:'E90',E295:'E90',
+CRJ1:'CR9',CRJ2:'CR9',CRJ7:'CR7',CRJ9:'CR9',CRJX:'CR9',CR7W:'CR7',CR9W:'CR9'};
 
-const AP={
-  ATL:'Atlanta',BOS:'Boston',CLT:'Charlotte',DEN:'Denver',DFW:'Dallas',
-  DTW:'Detroit',EWR:'Newark',IAD:'Dulles',IAH:'Houston',JFK:'New York',
-  LAX:'Los Angeles',LGA:'New York',MCO:'Orlando',MIA:'Miami',
-  MDW:'Chicago',MSP:'Minneapolis',ORD:'Chicago',PHL:'Philadelphia',
-  PHX:'Phoenix',SEA:'Seattle',SFO:'San Francisco',SLC:'Salt Lake City',
-  AUS:'Austin',BNA:'Nashville',BWI:'Baltimore',CVG:'Cincinnati',
-  CLE:'Cleveland',CMH:'Columbus',DCA:'Washington',GRR:'Grand Rapids',
-  IND:'Indianapolis',MCI:'Kansas City',MEM:'Memphis',MKE:'Milwaukee',
-  MSY:'New Orleans',OMA:'Omaha',PIT:'Pittsburgh',RDU:'Raleigh',
-  RSW:'Fort Myers',SAN:'San Diego',SAT:'San Antonio',STL:'St Louis',
-  TPA:'Tampa',TUL:'Tulsa',TVC:'Traverse City',LAS:'Las Vegas',
-  PDX:'Portland',FLL:'Fort Lauderdale',BUF:'Buffalo',
-  YYZ:'Toronto',YUL:'Montreal',LHR:'London',CDG:'Paris',
-  FRA:'Frankfurt',AMS:'Amsterdam',DXB:'Dubai',NRT:'Tokyo',
-  SIN:'Singapore',SYD:'Sydney',ICN:'Seoul',HKG:'Hong Kong',
-};
+const AP={ATL:'Atlanta',BOS:'Boston',CLT:'Charlotte',DEN:'Denver',DFW:'Dallas',DTW:'Detroit',
+EWR:'Newark',IAD:'Washington',IAH:'Houston',JFK:'New York',LAX:'Los Angeles',LGA:'New York',
+MCO:'Orlando',MIA:'Miami',MDW:'Chicago',MSP:'Minneapolis',ORD:'Chicago',PHL:'Philadelphia',
+PHX:'Phoenix',SEA:'Seattle',SFO:'San Francisco',SLC:'Salt Lake City',AUS:'Austin',
+BNA:'Nashville',BWI:'Baltimore',CVG:'Cincinnati',CLE:'Cleveland',CMH:'Columbus',
+DCA:'Washington',GRR:'Grand Rapids',IND:'Indianapolis',MCI:'Kansas City',MEM:'Memphis',
+MKE:'Milwaukee',MSY:'New Orleans',OMA:'Omaha',PIT:'Pittsburgh',RDU:'Raleigh',
+RSW:'Fort Myers',SAN:'San Diego',SAT:'San Antonio',STL:'St Louis',TPA:'Tampa',
+TVC:'Traverse City',LAS:'Las Vegas',PDX:'Portland',FLL:'Fort Lauderdale',BUF:'Buffalo',
+YYZ:'Toronto',YUL:'Montreal',LHR:'London',CDG:'Paris',FRA:'Frankfurt',AMS:'Amsterdam',
+DXB:'Dubai',NRT:'Tokyo',SIN:'Singapore',ICN:'Seoul',HKG:'Hong Kong',SYD:'Sydney'};
 
-const FTYPES={
-  B738:'Boeing 737-800',B739:'Boeing 737-900',
-  B37M:'737 MAX 7',B38M:'737 MAX 8',B39M:'737 MAX 9',
-  A319:'Airbus A319',A320:'Airbus A320',A321:'Airbus A321',
-  A20N:'Airbus A320neo',A21N:'Airbus A321neo',A19N:'Airbus A220',
-  B752:'Boeing 757-200',B763:'Boeing 767-300',
-  B772:'Boeing 777-200',B77W:'Boeing 777-300ER',
-  B788:'Boeing 787-8',B789:'Boeing 787-9',B78X:'Boeing 787-10',
-  B744:'Boeing 747-400',A332:'Airbus A330-200',A333:'Airbus A330-300',
-  A359:'Airbus A350-900',A35K:'Airbus A350-1000',
-  A380:'Airbus A380',A388:'Airbus A380-800',
-  E175:'Embraer E175',E75L:'Embraer E175',E190:'Embraer E190',
-  CRJ7:'CRJ-700',CRJ9:'CRJ-900',
-};
+const FTYPES={B738:'Boeing 737-800',B739:'Boeing 737-900',B37M:'Boeing 737 MAX 7',
+B38M:'Boeing 737 MAX 8',B39M:'Boeing 737 MAX 9',A319:'Airbus A319',A320:'Airbus A320',
+A321:'Airbus A321',A20N:'Airbus A320neo',A21N:'Airbus A321neo',A19N:'Airbus A220',
+B752:'Boeing 757-200',B763:'Boeing 767-300',B772:'Boeing 777-200',B77W:'Boeing 777-300ER',
+B788:'Boeing 787-8',B789:'Boeing 787-9',B78X:'Boeing 787-10',B744:'Boeing 747-400',
+A332:'Airbus A330-200',A333:'Airbus A330-300',A359:'Airbus A350-900',A35K:'Airbus A350-1000',
+A380:'Airbus A380',A388:'Airbus A380-800',E175:'Embraer E175',E75L:'Embraer E175',
+E190:'Embraer E190',CRJ7:'CRJ-700',CRJ9:'CRJ-900'};
 
-const ALNAMES={
-  DAL:'Delta Air Lines',UAL:'United Airlines',AAL:'American Airlines',
-  SWA:'Southwest Airlines',AAY:'Allegiant Air',NKS:'Spirit Airlines',
-  ASA:'Alaska Airlines',JBU:'JetBlue Airways',FFT:'Frontier Airlines',
-  ENY:'Envoy Air',GJS:'GoJet Airlines',RPA:'Republic Airways',
-  SKW:'SkyWest Airlines',ACA:'Air Canada',WJA:'WestJet',
-  DLH:'Lufthansa',BAW:'British Airways',AFR:'Air France',
-  KLM:'KLM',IBE:'Iberia',EZY:'easyJet',RYR:'Ryanair',
-  SAS:'Scandinavian Airlines',FIN:'Finnair',THY:'Turkish Airlines',
-  UAE:'Emirates',QTR:'Qatar Airways',ETD:'Etihad Airways',
-  SIA:'Singapore Airlines',CPA:'Cathay Pacific',QFA:'Qantas',
-  ANZ:'Air New Zealand',KAL:'Korean Air',JAL:'Japan Airlines',
-  ANA:'All Nippon Airways',
-};
+const ALNAMES={DAL:'Delta Air Lines',UAL:'United Airlines',AAL:'American Airlines',
+SWA:'Southwest Airlines',AAY:'Allegiant Air',NKS:'Spirit Airlines',ASA:'Alaska Airlines',
+JBU:'JetBlue Airways',FFT:'Frontier Airlines',ENY:'Envoy Air',GJS:'GoJet Airlines',
+RPA:'Republic Airways',SKW:'SkyWest Airlines',ACA:'Air Canada',WJA:'WestJet',
+DLH:'Lufthansa',BAW:'British Airways',AFR:'Air France',KLM:'KLM',IBE:'Iberia',
+EZY:'easyJet',RYR:'Ryanair',SAS:'Scandinavian Airlines',FIN:'Finnair',
+THY:'Turkish Airlines',UAE:'Emirates',QTR:'Qatar Airways',ETD:'Etihad Airways',
+SIA:'Singapore Airlines',CPA:'Cathay Pacific',QFA:'Qantas',ANZ:'Air New Zealand',
+KAL:'Korean Air',JAL:'Japan Airlines',ANA:'All Nippon Airways'};
 
-// Demo planes — real aircraft, iconic routes
 const DEMO=[
-  {cs:'DAL',tc:'A21N',name:'Delta Air Lines',type:'Airbus A321neo',from:'MSP',to:'ATL'},
-  {cs:'AFR',tc:'A388',name:'Air France',    type:'Airbus A380',   from:'CDG',to:'JFK'},
-  {cs:'UAE',tc:'A388',name:'Emirates',      type:'Airbus A380',   from:'DXB',to:'ORD'},
+  {cs:'DAL',tc:'A21N',name:'Delta Air Lines',from:'MSP',to:'ATL',alt:34000},
+  {cs:'AFR',tc:'A388',name:'Air France',from:'CDG',to:'JFK',alt:38000},
+  {cs:'UAE',tc:'A388',name:'Emirates',from:'DXB',to:'ORD',alt:40000},
 ];
 
-function al(cs){return(cs||'').replace(/\d.*$/,'').toUpperCase();}
+function alOf(cs){return(cs||'').replace(/\d.*$/,'').toUpperCase();}
 function livSrc(icao,tc){const t=TMAP[tc];return(HAS_LIVERY.has(icao)&&t)?`/liveries/${icao}_${t}.webp`:null;}
 
-let uLat=null,uLon=null,last=[],demoMode=false;
+let uLat=null,uLon=null,last=[],demoMode=false,posterNum=Math.floor(Math.random()*900)+100;
 const RC={};let rQ=Promise.resolve();
 
-function fetchT(u,ms){
-  const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||9000);
-  return fetch(u,{signal:c.signal}).finally(()=>clearTimeout(t));
-}
-function hav(a1,b1,a2,b2){
-  if(!a2||!b2)return Infinity;
+function fetchT(u,ms){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||9000);
+  return fetch(u,{signal:c.signal}).finally(()=>clearTimeout(t));}
+function hav(a1,b1,a2,b2){if(!a2||!b2)return Infinity;
   const R=3958.8,dr=(a2-a1)*Math.PI/180,dc=(b2-b1)*Math.PI/180;
   const a=Math.sin(dr/2)**2+Math.cos(a1*Math.PI/180)*Math.cos(a2*Math.PI/180)*Math.sin(dc/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-function brng(a1,b1,a2,b2){
-  const dL=(b2-b1)*Math.PI/180,y=Math.sin(dL)*Math.cos(a2*Math.PI/180);
-  const x=Math.cos(a1*Math.PI/180)*Math.sin(a2*Math.PI/180)-Math.sin(a1*Math.PI/180)*Math.cos(a2*Math.PI/180)*Math.cos(dL);
-  return((Math.atan2(y,x)*180/Math.PI)+360)%360;
-}
-function cmp(d){return['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(d/22.5)%16];}
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
 
 async function lookupRoute(cs){
   if(RC[cs]!==undefined)return;RC[cs]=null;
   rQ=rQ.then(()=>new Promise(r=>setTimeout(r,1800))).then(async()=>{
     try{const r=await fetchT(`https://airlabs.co/api/v9/flight?flight_icao=${encodeURIComponent(cs)}&api_key=${AIRLABS}`,9000);
-      if(r.ok){const d=await r.json();const f=d?.response;if(f?.dep_iata&&f?.arr_iata){RC[cs]={from:f.dep_iata,to:f.arr_iata};render(last);}}}catch(e){}
-  });
+      if(r.ok){const d=await r.json();const f=d?.response;
+        if(f?.dep_iata&&f?.arr_iata){RC[cs]={from:f.dep_iata,to:f.arr_iata};render(last);}}}catch(e){}});
 }
 
 async function fetchFlights(){
   if(!uLat||demoMode)return;
   const la=uLat.toFixed(4),lo=uLon.toFixed(4);
-  let best=[],usedR=RADII[0];
+  let best=[];
   for(const r of RADII){
-    usedR=r;
     try{
       const urls=[`/.netlify/functions/flights?lat=${la}&lon=${lo}&radius=${r}`,
                   `https://api.adsb.lol/v2/lat/${la}/lon/${lo}/dist/${r}`];
@@ -302,70 +256,75 @@ async function fetchFlights(){
         if(!a.flight)return false;
         const cs=a.flight.trim().toUpperCase();
         if(!/^[A-Z]{2,3}\d/.test(cs)||/^N\d/.test(cs))return false;
-        return livSrc(al(cs),(a.t||'').toUpperCase())!==null;
+        return livSrc(alOf(cs),(a.t||'').toUpperCase())!==null;
       }).map(a=>({...a,_d:hav(uLat,uLon,a.lat,a.lon)}))
         .filter(a=>isFinite(a._d)).sort((a,b)=>a._d-b._d).slice(0,3);
       if(ac.length>0){best=ac;break;}
     }catch(e){}
   }
-  best.forEach(a=>{if(a.dep_iata&&a.arr_iata){const cs=a.flight.trim().toUpperCase();if(RC[cs]===undefined)RC[cs]={from:a.dep_iata,to:a.arr_iata};}});
-  document.getElementById('ftr-c').textContent='ADS\u2011B \u00B7 '+usedR+' MI RADIUS';
-  document.getElementById('ftr-r').textContent=new Date().toLocaleTimeString('en-US',{hour12:false});
+  best.forEach(a=>{if(a.dep_iata&&a.arr_iata){const cs=a.flight.trim().toUpperCase();
+    if(RC[cs]===undefined)RC[cs]={from:a.dep_iata,to:a.arr_iata};}});
   last=best;render(best);
   best.forEach(a=>{const cs=a.flight.trim().toUpperCase();if(RC[cs]===undefined)lookupRoute(cs);});
 }
 
-function buildRow(src,flight,alName,typeName,from,to,distLabel,dotColor){
-  const fromCity=AP[from]||from, toCity=AP[to]||to;
-  const routeStr=from&&to?`${from}&ensp;&mdash;&ensp;${to}`:'';
-  const cityStr=from&&to?`${fromCity}&ensp;&rarr;&ensp;${toCity}`:'';
-  const fbLogo=`/logos/${flight.replace(/\d.*/,'')}_logo-white.png`;
+function capLine(alName,typeName,route,alt,dist){
+  const bits=[];
+  bits.push(`<b>${alName}</b>`);
+  if(typeName)bits.push(typeName);
+  if(route)bits.push(route);
+  if(alt)bits.push(alt.toLocaleString()+' ft');
+  if(dist)bits.push(dist);
+  return bits.join('<span class="sep">&middot;</span>');
+}
+
+function slotHTML(src,cap){
   return `
-    <div class="pimg">
-      <img class="livery" src="${src}" alt="${flight}"
-           onerror="this.className='fallback';this.src='${fbLogo}';this.onerror=null;"/>
+    <div class="plane-wrap">
+      <img class="livery" src="${src}" onerror="this.style.opacity='0'"/>
     </div>
-    <div class="pcap">
-      <div class="cap-flight">${flight}</div>
-      <div class="cap-airline">${alName}</div>
-      ${typeName?`<div class="cap-type">${typeName}</div>`:''}
-      <hr class="cap-rule"/>
-      ${routeStr?`<div class="cap-route">${routeStr}</div>`:''}
-      ${cityStr ?`<div class="cap-cities">${cityStr}</div>`:''}
-      ${distLabel?`<div class="cap-dist" style="color:${dotColor}">${distLabel}</div>`:''}
-    </div>`;
+    <div class="plane-cap">${cap}</div>`;
 }
 
 function renderDemo(){
   DEMO.forEach((p,i)=>{
-    const row=document.getElementById('r'+i);
     const t=TMAP[p.tc]||'320';
     const src=`/liveries/${p.cs}_${t}.webp`;
-    row.style.opacity='1';row.style.borderLeft='none';
-    row.innerHTML=buildRow(src,`${p.cs} \u2014 ${p.type}`,p.name,p.type,p.from,p.to,'','');
+    const route=(AP[p.from]||p.from)+' &ndash; '+(AP[p.to]||p.to);
+    const cap=capLine(p.name,FTYPES[p.tc]||'',route,p.alt,'');
+    document.getElementById('s'+i).innerHTML=slotHTML(src,cap);
   });
-  document.getElementById('ftr-l').textContent='Art Demo Mode';
-  document.getElementById('ftr-c').textContent='Overhead';
+  const today=new Date();
+  const dateStr=today.getDate()+' '+['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][today.getMonth()]+' '+today.getFullYear();
+  document.getElementById('colophon').innerHTML=
+    `&#8470; ${posterNum} &nbsp;&middot;&nbsp; ${dateStr} &nbsp;&middot;&nbsp; DEMONSTRATION &nbsp;&middot;&nbsp; 3 AIRCRAFT`;
 }
 
 function render(ac){
   if(demoMode)return;
   for(let i=0;i<3;i++){
-    const row=document.getElementById('r'+i);
+    const slot=document.getElementById('s'+i);
     const a=ac[i];
-    if(!a){row.innerHTML='<div class="pempty">&mdash;</div>';row.style.opacity='';row.style.borderLeft='';continue;}
+    if(!a){slot.innerHTML=i===0&&ac.length===0?'<div class="empty-note">Listening for aircraft</div>':'';continue;}
     const cs=a.flight.trim().toUpperCase();
-    const icao=al(cs),tc=(a.t||'').toUpperCase();
+    const icao=alOf(cs),tc=(a.t||'').toUpperCase();
     const route=RC[cs];
-    const d=a._d,from=route?.from||'',to=route?.to||'';
-    const dot=d<=10?'#6EE7B7':d<=25?'#D4C5A0':d<=50?'#A89070':'#666';
-    const distLabel=d<=10?`${d.toFixed(1)} mi overhead`
-                   :d<=25?`${d.toFixed(1)} mi ${cmp(brng(uLat,uLon,a.lat,a.lon))}`
-                   :`${d.toFixed(1)} mi ${cmp(brng(uLat,uLon,a.lat,a.lon))}`;
-    row.style.opacity=d<=10?'1':d<=25?'0.92':d<=50?'0.76':'0.55';
-    row.style.borderLeft='none';
-    row.innerHTML=buildRow(livSrc(icao,tc),cs,ALNAMES[icao]||icao,FTYPES[tc]||tc||'',from,to,distLabel,dot);
-    if(uLat&&ac.length)document.getElementById('ftr-l').textContent=`${uLat.toFixed(4)}\u00b0 N &nbsp;${Math.abs(uLon).toFixed(4)}\u00b0 W &nbsp;\u00b7&nbsp; ${ac.length} aircraft`;
+    const routeStr=route?.from&&route?.to?(AP[route.from]||route.from)+' &ndash; '+(AP[route.to]||route.to):'';
+    const alt=a.alt_baro&&a.alt_baro!=='ground'?parseInt(a.alt_baro):null;
+    const dist=a._d<=10?a._d.toFixed(1)+' mi overhead':a._d.toFixed(1)+' mi away';
+    const cap=capLine(ALNAMES[icao]||icao,FTYPES[tc]||'',routeStr,alt,dist);
+    slot.innerHTML=slotHTML(livSrc(icao,tc),cap);
+  }
+  // Colophon: ? · date · coords · location · N aircraft
+  if(uLat){
+    const today=new Date();
+    const dateStr=today.getDate()+' '+['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][today.getMonth()]+' '+today.getFullYear();
+    const coords=Math.abs(uLat).toFixed(4)+'\u00b0 '+(uLat>=0?'N':'S')+' '+Math.abs(uLon).toFixed(4)+'\u00b0 '+(uLon>=0?'E':'W');
+    const locName=localStorage.getItem('oh_city')||'';
+    document.getElementById('colophon').innerHTML=
+      `&#8470; ${posterNum} &nbsp;&middot;&nbsp; ${dateStr} &nbsp;&middot;&nbsp; ${coords}`+
+      (locName?` &nbsp;&middot;&nbsp; RECEIVED OVER ${locName.toUpperCase()}`:'')+
+      ` &nbsp;&middot;&nbsp; ${ac.length} AIRCRAFT`;
   }
 }
 
@@ -373,64 +332,56 @@ function render(ac){
 function togglePalette(){document.getElementById('palette').classList.toggle('show');}
 document.addEventListener('click',e=>{
   const p=document.getElementById('palette');
-  if(!p.contains(e.target)&&e.target.id!=='brand')p.classList.remove('show');
-});
-document.querySelectorAll('.swatch').forEach(s=>{
+  if(!p.contains(e.target)&&e.target.id!=='brand')p.classList.remove('show');});
+document.querySelectorAll('.sw').forEach(s=>{
   s.addEventListener('click',()=>{
-    const t=s.dataset.t;
-    document.body.setAttribute('data-theme',t);
-    document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('act'));
+    document.body.setAttribute('data-theme',s.dataset.t);
+    document.querySelectorAll('.sw').forEach(x=>x.classList.remove('act'));
     s.classList.add('act');
-    localStorage.setItem('oh_theme',t);
-  });
-});
+    localStorage.setItem('oh_theme',s.dataset.t);});});
 const st=localStorage.getItem('oh_theme');
-if(st){document.body.setAttribute('data-theme',st);document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('act',s.dataset.t===st));}
+if(st){document.body.setAttribute('data-theme',st);
+  document.querySelectorAll('.sw').forEach(s=>s.classList.toggle('act',s.dataset.t===st));}
 
 function toggleArt(){
   document.body.classList.toggle('artfx');
   document.getElementById('artbtn').classList.toggle('on',document.body.classList.contains('artfx'));
-  localStorage.setItem('oh_art',document.body.classList.contains('artfx')?'1':'0');
-}
-if(localStorage.getItem('oh_art')==='1'){document.body.classList.add('artfx');document.getElementById('artbtn').classList.add('on');}
+  localStorage.setItem('oh_art',document.body.classList.contains('artfx')?'1':'0');}
+if(localStorage.getItem('oh_art')==='1'){document.body.classList.add('artfx');
+  document.getElementById('artbtn').classList.add('on');}
 
 function toggleDemo(){
   demoMode=!demoMode;
   document.getElementById('demobtn').classList.toggle('on',demoMode);
-  demoMode?renderDemo():render(last);
-}
+  demoMode?renderDemo():render(last);}
 
 // -- Location --
 function showZip(){
   document.getElementById('zo').classList.add('show');
   const zi=document.getElementById('zi'),zb=document.getElementById('zb'),ze=document.getElementById('ze');
-  const go=()=>{const z=zi.value.trim();if(!/^\d{5}$/.test(z)){ze.textContent='Enter a valid ZIP';return;}ze.textContent='';document.getElementById('zo').classList.remove('show');resolveZip(z);};
-  zb.onclick=go;zi.onkeydown=e=>{if(e.key==='Enter')go();};setTimeout(()=>zi.focus(),100);
-}
+  const go=()=>{const z=zi.value.trim();if(!/^\d{5}$/.test(z)){ze.textContent='Enter a valid ZIP';return;}
+    ze.textContent='';document.getElementById('zo').classList.remove('show');resolveZip(z);};
+  zb.onclick=go;zi.onkeydown=e=>{if(e.key==='Enter')go();};setTimeout(()=>zi.focus(),100);}
 async function resolveZip(z){
-  document.getElementById('loc').textContent='Locating...';
   try{
     const r=await fetchT(`https://api.zippopotam.us/us/${z}`,6000);if(!r.ok)throw 0;
     const d=await r.json();
     uLat=parseFloat(d.places[0].latitude);uLon=parseFloat(d.places[0].longitude);
-    document.getElementById('loc').textContent=d.places[0]['place name']+', '+d.places[0]['state abbreviation'];
+    localStorage.setItem('oh_city',d.places[0]['place name']);
     localStorage.setItem('oh_ll',JSON.stringify([uLat,uLon]));localStorage.setItem('oh_zip',z);
     fetchFlights();
-  }catch(e){showZip();}
-}
+  }catch(e){showZip();}}
 function initLoc(){
   const s=localStorage.getItem('oh_ll')||localStorage.getItem('flightboard_loc');
-  if(s){try{[uLat,uLon]=JSON.parse(s);document.getElementById('loc').textContent=Math.abs(uLat).toFixed(4)+'\u00b0 N, '+Math.abs(uLon).toFixed(4)+'\u00b0 W';fetchFlights();}catch(e){uLat=null;}}
+  if(s){try{[uLat,uLon]=JSON.parse(s);fetchFlights();}catch(e){uLat=null;}}
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(
-      p=>{uLat=p.coords.latitude;uLon=p.coords.longitude;localStorage.setItem('oh_ll',JSON.stringify([uLat,uLon]));document.getElementById('loc').textContent=uLat.toFixed(4)+'\u00b0 N, '+Math.abs(uLon).toFixed(4)+'\u00b0 W';fetchFlights();},
+      p=>{uLat=p.coords.latitude;uLon=p.coords.longitude;
+        localStorage.setItem('oh_ll',JSON.stringify([uLat,uLon]));fetchFlights();},
       ()=>{if(!uLat){const z=localStorage.getItem('oh_zip');if(z)resolveZip(z);else showZip();}},
-      {timeout:8000,maximumAge:300000}
-    );
-  }else if(!uLat)showZip();
-}
-function tick(){document.getElementById('clk').textContent=new Date().toLocaleTimeString('en-US',{hour12:false});}
-setInterval(tick,1000);tick();
+      {timeout:8000,maximumAge:300000});
+  }else if(!uLat)showZip();}
+
 setInterval(fetchFlights,30000);
 initLoc();
 </script>
