@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OVERHEAD</title>
+<style>
+:root {
+  --bg: #060A0D;
+  --amber: #F5A623;
+  --amber2: #FFCC66;
+  --dim: rgba(245,166,35,0.45);
+  --line: rgba(245,166,35,0.09);
+  --line2: rgba(245,166,35,0.18);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:100%; height:100%; overflow:hidden; background:var(--bg); color:var(--amber); font-family:'Courier New',monospace; }
+
+#app { height:100vh; display:flex; flex-direction:column; padding:16px 40px 12px; }
+
+/* ── Header ── */
+#hdr {
+  display:flex; justify-content:space-between; align-items:baseline;
+  border-bottom:1px solid var(--line2);
+  padding-bottom:10px; flex-shrink:0; margin-bottom:0;
+}
+.ht { font-size:9px; letter-spacing:7px; opacity:.4; }
+.hl { font-size:10px; letter-spacing:3px; opacity:.65; }
+.hc { font-size:11px; letter-spacing:2px; opacity:.3; font-variant-numeric:tabular-nums; }
+
+/* ── Plane rows ── */
+#rows { flex:1; display:flex; flex-direction:column; min-height:0; }
+
+.prow {
+  flex:1; display:flex; align-items:center;
+  border-bottom:1px solid var(--line);
+  overflow:hidden; min-height:0; position:relative;
+}
+.prow:last-child { border-bottom:none; }
+
+.part {
+  flex:0 0 62%; height:100%;
+  display:flex; align-items:center;
+  padding:8px 0 8px 0;
+  overflow:hidden; min-width:0;
+}
+.part svg {
+  width:100%; height:100%;
+  display:block;
+  overflow:visible;
+}
+
+.pinfo {
+  flex:1; padding:0 0 0 28px;
+  border-left:1px solid var(--line2);
+  display:flex; flex-direction:column; justify-content:center;
+  gap:3px; min-width:0; overflow:hidden;
+}
+
+.pfl  { font-size:clamp(16px,2.6vw,32px); letter-spacing:5px; font-weight:700; white-space:nowrap; }
+.pan  { font-size:clamp(7px,.85vw,10px); letter-spacing:4px; opacity:.4; margin-top:2px; }
+.pro  { font-size:clamp(13px,2vw,24px); letter-spacing:4px; margin-top:5px; white-space:nowrap; }
+.pci  { font-size:clamp(7px,.8vw,9px); letter-spacing:2px; opacity:.38; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pst  { display:flex; gap:clamp(10px,2vw,24px); margin-top:6px; }
+.psv  { font-size:clamp(10px,1.3vw,16px); letter-spacing:2px; }
+.psl  { font-size:clamp(6px,.65vw,8px); letter-spacing:2px; opacity:.28; margin-top:1px; }
+.pty  { font-size:clamp(7px,.75vw,9px); letter-spacing:3px; opacity:.32; margin-top:4px; }
+
+.pempty { display:flex; align-items:center; width:100%; opacity:.08; font-size:10px; letter-spacing:6px; padding-left:4px; }
+
+/* ── Footer ── */
+#ftr {
+  flex-shrink:0; border-top:1px solid var(--line); padding-top:9px;
+  display:flex; justify-content:space-between;
+  font-size:8px; letter-spacing:3px; opacity:.2;
+}
+
+/* CRT scanlines */
+body::after {
+  content:''; position:fixed; inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.1) 2px,rgba(0,0,0,.1) 4px);
+  pointer-events:none; z-index:999;
+}
+body::before {
+  content:''; position:fixed; inset:0;
+  background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,.4) 100%);
+  pointer-events:none; z-index:998;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="hdr">
+    <div class="ht">✈ &nbsp; OVERHEAD</div>
+    <div class="hl" id="loc">LOCATING...</div>
+    <div class="hc" id="clk">--:--:--</div>
+  </div>
+  <div id="rows">
+    <div class="prow" id="r0"><div class="pempty">ACQUIRING SIGNAL...</div></div>
+    <div class="prow" id="r1"><div class="pempty">— &nbsp; — &nbsp; —</div></div>
+    <div class="prow" id="r2"><div class="pempty">— &nbsp; — &nbsp; —</div></div>
+  </div>
+  <div id="ftr">
+    <span>ADS-B · AIRLABS</span>
+    <span id="upd">—</span>
+    <span id="radius-lbl">10 MI RADIUS</span>
+  </div>
+</div>
+
+<!-- ZIP overlay — shown when GPS unavailable -->
+<div id="zip-overlay" style="display:none;position:fixed;inset:0;background:rgba(6,10,13,0.96);z-index:2000;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
+  <div style="font-size:9px;letter-spacing:6px;color:#F5A623;opacity:.5;">✈ &nbsp; OVERHEAD</div>
+  <div style="font-size:11px;letter-spacing:4px;color:#F5A623;opacity:.8;">ENTER YOUR ZIP CODE</div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <input id="zip-input" type="text" inputmode="numeric" maxlength="5" placeholder="49315"
+      style="background:transparent;border:1px solid rgba(245,166,35,0.4);color:#F5A623;
+             font-family:'Courier New',monospace;font-size:20px;letter-spacing:6px;
+             padding:10px 16px;width:140px;text-align:center;outline:none;"/>
+    <button id="zip-btn"
+      style="background:transparent;border:1px solid rgba(245,166,35,0.4);color:#F5A623;
+             font-family:'Courier New',monospace;font-size:10px;letter-spacing:3px;
+             padding:10px 16px;cursor:pointer;">GO</button>
+  </div>
+  <div id="zip-err" style="font-size:9px;letter-spacing:3px;color:#C8102E;opacity:.8;min-height:14px;"></div>
+</div>
+<script>
+'use strict';
+const AIRLABS_KEY = '7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
+// radius is auto-expanding: 10→25→50→100mi
+
+// ── Airport names ──
+const AP = {
+  ATL:'Atlanta',BOS:'Boston',CLT:'Charlotte',DEN:'Denver',DFW:'Dallas/Ft Worth',
+  DTW:'Detroit',EWR:'Newark',HNL:'Honolulu',IAD:'Dulles',IAH:'Houston Intl',
+  JFK:'New York JFK',LAX:'Los Angeles',LGA:'New York LGA',MCO:'Orlando',
+  MIA:'Miami',MDW:'Chicago Midway',MSP:'Minneapolis',ORD:'Chicago OHare',
+  PHL:'Philadelphia',PHX:'Phoenix',SEA:'Seattle',SFO:'San Francisco',
+  SLC:'Salt Lake City',AUS:'Austin',BNA:'Nashville',BUF:'Buffalo',
+  BWI:'Baltimore',CVG:'Cincinnati',CLE:'Cleveland',CMH:'Columbus',
+  DCA:'Washington Reagan',GRR:'Grand Rapids',IND:'Indianapolis',
+  MCI:'Kansas City',MDT:'Harrisburg',MEM:'Memphis',MKE:'Milwaukee',
+  MSY:'New Orleans',OMA:'Omaha',PIT:'Pittsburgh',PVD:'Providence',
+  RDU:'Raleigh Durham',RIC:'Richmond',ROC:'Rochester',RSW:'Fort Myers',
+  SAN:'San Diego',SAT:'San Antonio',SAV:'Savannah',STL:'St Louis',
+  TPA:'Tampa',TUL:'Tulsa',TVC:'Traverse City',TYS:'Knoxville',
+  LAS:'Las Vegas',PDX:'Portland',ABQ:'Albuquerque',BDL:'Hartford',
+  LEX:'Lexington',HSV:'Huntsville',FLL:'Fort Lauderdale',
+  YYZ:'Toronto',YUL:'Montreal',YVR:'Vancouver',
+  LHR:'London Heathrow',CDG:'Paris CDG',FRA:'Frankfurt',
+  AMS:'Amsterdam',DXB:'Dubai',NRT:'Tokyo Narita',
+  ORY:'Paris Orly',MUC:'Munich',ZRH:'Zurich',
+};
+
+// ── Aircraft type → shape ──
+const SHAPE = {
+  B732:'NB',B733:'NB',B734:'NB',B735:'NB',B736:'NB',B737:'NB',B738:'NB',
+  B739:'NB',B73W:'NB',B37M:'NB',B38M:'NB',B39M:'NB',B3XM:'NB',
+  A318:'NB',A319:'NB',A320:'NB',A321:'NB',A20N:'NB',A21N:'NB',A19N:'NB',A32S:'NB',
+  B752:'NB',B753:'NB',
+  B762:'WB',B763:'WB',B764:'WB',B772:'WB',B773:'WB',B77L:'WB',B77W:'WB',
+  B788:'WB',B789:'WB',B78X:'WB',B744:'WB',B748:'WB',
+  A332:'WB',A333:'WB',A338:'WB',A339:'WB',A342:'WB',A343:'WB',
+  A345:'WB',A346:'WB',A359:'WB',A35K:'WB',A380:'WB',A388:'WB',
+  E170:'RJ',E175:'RJ',E75L:'RJ',E70:'RJ',E190:'RJ',E195:'RJ',E290:'RJ',E295:'RJ',
+  CRJ1:'CRJ',CRJ2:'CRJ',CRJ7:'CRJ',CRJ9:'CRJ',CRJX:'CRJ',CR7W:'CRJ',CR9W:'CRJ',
+  DH8A:'PROP',DH8B:'PROP',DH8C:'PROP',DH8D:'PROP',AT72:'PROP',AT73:'PROP',AT75:'PROP',AT76:'PROP',
+};
+
+// ── Friendly type names ──
+const FTYPES = {
+  B732:'Boeing 737-200',B733:'Boeing 737-300',B734:'Boeing 737-400',B735:'Boeing 737-500',
+  B736:'Boeing 737-600',B737:'Boeing 737-700',B738:'Boeing 737-800',B739:'Boeing 737-900',
+  B37M:'Boeing 737 MAX 7',B38M:'Boeing 737 MAX 8',B39M:'Boeing 737 MAX 9',
+  A318:'Airbus A318',A319:'Airbus A319',A320:'Airbus A320',A321:'Airbus A321',
+  A20N:'Airbus A320neo',A21N:'Airbus A321neo',A19N:'Airbus A220',A32S:'Airbus A320fam',
+  B752:'Boeing 757-200',B753:'Boeing 757-300',
+  B762:'Boeing 767-200',B763:'Boeing 767-300',B764:'Boeing 767-400',
+  B772:'Boeing 777-200',B773:'Boeing 777-300',B77L:'Boeing 777-200LR',B77W:'Boeing 777-300ER',
+  B788:'Boeing 787-8',B789:'Boeing 787-9',B78X:'Boeing 787-10',
+  B744:'Boeing 747-400',B748:'Boeing 747-8',
+  A332:'Airbus A330-200',A333:'Airbus A330-300',A338:'Airbus A330-800neo',A339:'Airbus A330-900neo',
+  A359:'Airbus A350-900',A35K:'Airbus A350-1000',A380:'Airbus A380',A388:'Airbus A380-800',
+  E170:'Embraer E170',E175:'Embraer E175',E75L:'Embraer E175',E70:'Embraer E170',
+  E190:'Embraer E190',E195:'Embraer E195',
+  CRJ1:'Bombardier CRJ-100',CRJ2:'Bombardier CRJ-200',CRJ7:'Bombardier CRJ-700',
+  CRJ9:'Bombardier CRJ-900',CRJX:'Bombardier CRJ-1000',
+  DH8A:'Dash 8-100',DH8B:'Dash 8-200',DH8C:'Dash 8-300',DH8D:'Dash 8-400',
+  AT72:'ATR 72',AT73:'ATR 72-300',AT75:'ATR 72-500',AT76:'ATR 72-600',
+};
+
+// ── Liveries: f=fuselage, t=tail, s=stripe, b=belly, e=engine, ed=engine-dark ──
+const LV = {
+  DAL:{ f:'#FFFFFF', t:'#003087', s:'#C8102E', b:'#D8D8D8', e:'#777', ed:'#333' },
+  UAL:{ f:'#FFFFFF', t:'#005BAC', s:'#8B8D8E', b:'#CCCCCC', e:'#888', ed:'#444' },
+  AAL:{ f:'#C4C4C4', t:'#BBBBBB', s:'#0078D2', b:'#ADADAD', e:'#999', ed:'#666' },
+  SWA:{ f:'#FFFFFF', t:'#304CB2', s:'#CC2529', b:'#FFFFFF', e:'#666', ed:'#333' },
+  AAY:{ f:'#151515', t:'#F5A623', s:'#F5A623', b:'#0A0A0A', e:'#2A2A2A', ed:'#111' },
+  NKS:{ f:'#FFEA00', t:'#FFEA00', s:'#1A1A1A', b:'#FFD800', e:'#444', ed:'#222' },
+  ASA:{ f:'#FFFFFF', t:'#00385D', s:'#01426A', b:'#EEEEEE', e:'#777', ed:'#444' },
+  JBU:{ f:'#FFFFFF', t:'#00205B', s:'#009CDE', b:'#EEF8FF', e:'#888', ed:'#444' },
+  FFT:{ f:'#FFFFFF', t:'#006341', s:'#8DC63F', b:'#F4F4F4', e:'#777', ed:'#444' },
+  GJS:{ f:'#FFFFFF', t:'#003087', s:'#C8102E', b:'#E0E0E0', e:'#777', ed:'#444' },
+  ENY:{ f:'#D0D0D0', t:'#B0B0B0', s:'#0078D2', b:'#C0C0C0', e:'#888', ed:'#555' },
+  RPA:{ f:'#FFFFFF', t:'#004B87', s:'#004B87', b:'#EEEEEE', e:'#888', ed:'#555' },
+  SKW:{ f:'#FFFFFF', t:'#444444', s:'#666666', b:'#E8E8E8', e:'#777', ed:'#444' },
+  PDT:{ f:'#FFFFFF', t:'#CC0000', s:'#0000CC', b:'#E8E8E8', e:'#777', ed:'#444' },
+  DEF:{ f:'#E0E0E0', t:'#555555', s:'#888888', b:'#C8C8C8', e:'#888', ed:'#555' },
+};
+
+const PFX_LV = {
+  DAL:'DAL',UAL:'UAL',AAL:'AAL',SWA:'SWA',WN:'SWA',
+  AAY:'AAY',NKS:'NKS',ASA:'ASA',JBU:'JBU',FFT:'FFT',
+  GJS:'GJS',ENY:'ENY',RPA:'RPA',SKW:'SKW',PDT:'PDT',
+};
+
+const AL_NAMES = {
+  DAL:'Delta Air Lines',UAL:'United Airlines',AAL:'American Airlines',
+  SWA:'Southwest Airlines',WN:'Southwest Airlines',AAY:'Allegiant Air',
+  NKS:'Spirit Airlines',ASA:'Alaska Airlines',JBU:'JetBlue',
+  FFT:'Frontier Airlines',GJS:'GoJet Airlines',ENY:'Envoy Air',
+  RPA:'Republic Airways',SKW:'SkyWest Airlines',PDT:'Piedmont Airlines',
+  CPZ:'Compass Airlines',EJT:'Mesa Airlines',
+};
+
+function getLivery(cs) {
+  const pfx = (cs||'').replace(/\d.*$/,'').toUpperCase();
+  return LV[PFX_LV[pfx]] || LV.DEF;
+}
+function getShape(t) { return SHAPE[(t||'').toUpperCase()] || 'NB'; }
+function alName(cs) {
+  const pfx = (cs||'').replace(/\d.*$/,'').toUpperCase();
+  return AL_NAMES[pfx] || (pfx ? pfx+' AIRLINES' : 'AIRLINE UNKNOWN');
+}
+
+// ── SVG Windows ──
+function wins(y, x1, x2, gap) {
+  let s=''; for(let x=x1;x<=x2;x+=gap) s+=`<rect x="${x}" y="${y}" width="7" height="5" rx="1.5" fill="rgba(0,0,0,0.14)"/>`;
+  return s;
+}
+
+// ── Aircraft SVG builders ──
+// All aircraft face RIGHT. Flip via heading > 180.
+
+function nbSVG(L, id, flip, wb) {
+  // Narrowbody (also used for widebody with wb=true)
+  const W = wb?600:560, H = wb?188:175;
+  const FP = wb
+    ? 'M20,94 C36,68 64,68 100,68 L452,68 C482,68 508,76 524,86 L532,94 C522,102 498,118 470,120 L100,120 C64,120 36,120 20,94Z'
+    : 'M18,88 C32,66 60,66 92,66 L418,66 C448,66 472,74 488,84 L496,88 C486,96 462,110 434,112 L92,112 C60,112 32,110 18,88Z';
+  const VT = wb
+    ? 'M446,68 C454,46 468,18 478,8 C488,18 502,46 510,68Z'
+    : 'M422,66 C430,46 444,22 454,14 C464,22 476,46 484,66Z';
+  const HS = wb
+    ? 'M514,96 L468,82 L464,90 L514,108Z'
+    : 'M478,90 L438,78 L434,86 L478,100Z';
+  const WG = wb
+    ? 'M204,118 L400,154 L394,164 L254,132Z'
+    : 'M196,110 L358,142 L352,152 L244,122Z';
+  const EN = wb
+    ? 'M256,152 L364,152 C370,152 375,158 375,165 C375,172 370,178 364,178 L256,178 C250,178 245,172 245,165 C245,158 250,152 256,152Z'
+    : 'M246,140 L322,140 C326,140 330,144 330,150 C330,156 326,160 322,160 L246,160 C242,160 238,156 238,150 C238,144 242,140 246,140Z';
+  const EI = wb
+    ? 'M245,165 C245,152 260,152 260,165 C260,178 245,178 245,165Z'
+    : 'M238,150 C238,140 250,140 250,150 C250,160 238,160 238,150Z';
+  const sy = wb?74:72, sx1=wb?112:104, sx2=wb?435:412;
+  const tr = flip ? `translate(${W},0) scale(-1,1)` : '';
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<defs><clipPath id="c${id}"><path d="${FP}"/></clipPath></defs>
+<g transform="${tr}">
+<path d="${WG}" fill="${L.b}" opacity=".9"/>
+<path d="${EN}" fill="${L.e}"/><path d="${EI}" fill="${L.ed}"/>
+<path d="${FP}" fill="${L.f}"/>
+<rect x="0" y="${wb?100:96}" width="${W}" height="${wb?26:22}" fill="${L.b}" clip-path="url(#c${id})"/>
+<rect x="${wb?60:50}" y="${wb?90:86}" width="${wb?415:388}" height="${wb?10:9}" fill="${L.s}" clip-path="url(#c${id})"/>
+${wins(sy,sx1,sx2,13)}
+<path d="${VT}" fill="${L.t}"/>
+<path d="${HS}" fill="${L.b}" stroke="${L.b}" stroke-width="1"/>
+<path d="${FP}" fill="none" stroke="rgba(0,0,0,.1)" stroke-width="1.2"/>
+</g></svg>`;
+}
+
+function rjSVG(L, id, flip) {
+  const W=460, H=150;
+  const FP='M18,76 C30,56 58,60 88,60 L356,60 C380,60 400,66 412,74 L418,78 C408,84 388,94 364,97 L88,97 C58,97 30,100 18,78Z';
+  const VT='M350,60 C356,42 366,20 374,12 C382,20 392,42 396,60Z';
+  const HS='M392,76 L356,68 L352,74 L392,86Z';
+  const WG='M164,95 L288,120 L284,128 L202,106Z';
+  const EN='M198,118 L254,118 C258,118 261,122 261,127 C261,132 258,136 254,136 L198,136 C194,136 191,132 191,127 C191,122 194,118 198,118Z';
+  const EI='M191,127 C191,118 201,118 201,127 C201,136 191,136 191,127Z';
+  const tr = flip ? `translate(${W},0) scale(-1,1)` : '';
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<defs><clipPath id="c${id}"><path d="${FP}"/></clipPath></defs>
+<g transform="${tr}">
+<path d="${WG}" fill="${L.b}" opacity=".9"/>
+<path d="${EN}" fill="${L.e}"/><path d="${EI}" fill="${L.ed}"/>
+<path d="${FP}" fill="${L.f}"/>
+<rect x="0" y="84" width="${W}" height="16" fill="${L.b}" clip-path="url(#c${id})"/>
+<rect x="50" y="72" width="300" height="8" fill="${L.s}" clip-path="url(#c${id})"/>
+${wins(65,100,330,13)}
+<path d="${VT}" fill="${L.t}"/>
+<path d="${HS}" fill="${L.b}" stroke="${L.b}" stroke-width="1"/>
+<path d="${FP}" fill="none" stroke="rgba(0,0,0,.1)" stroke-width="1.2"/>
+</g></svg>`;
+}
+
+function crjSVG(L, id, flip) {
+  const W=490, H=165;
+  // CRJ: longer/narrower fuselage, T-tail, rear engines
+  const FP='M20,79 C34,60 64,65 94,65 L374,65 C396,65 414,70 422,77 L426,80 C418,84 400,92 378,95 L94,95 C64,95 34,98 20,81Z';
+  const VT='M372,65 C377,46 387,22 395,12 C403,22 412,46 416,65Z';
+  const TBL='M380,43 L332,35 L330,41 L380,52Z';
+  const TBR='M413,43 L458,35 L460,41 L413,52Z';
+  const WG='M156,92 L262,112 L258,120 L192,102Z';
+  const E1='M334,67 L390,67 C394,67 397,71 397,76 C397,81 394,85 390,85 L334,85 C330,85 327,81 327,76 C327,71 330,67 334,67Z';
+  const EI1='M327,76 C327,67 337,67 337,76 C337,85 327,85 327,76Z';
+  const E2='M334,82 L390,82 C394,82 397,86 397,91 C397,96 394,100 390,100 L334,100 C330,100 327,96 327,91 C327,86 330,82 334,82Z';
+  const EI2='M327,91 C327,82 337,82 337,91 C337,100 327,100 327,91Z';
+  const tr = flip ? `translate(${W},0) scale(-1,1)` : '';
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<defs><clipPath id="c${id}"><path d="${FP}"/></clipPath></defs>
+<g transform="${tr}">
+<path d="${WG}" fill="${L.b}" opacity=".9"/>
+<path d="${E2}" fill="${L.e}"/><path d="${EI2}" fill="${L.ed}"/>
+<path d="${E1}" fill="${L.e}"/><path d="${EI1}" fill="${L.ed}"/>
+<path d="${FP}" fill="${L.f}"/>
+<rect x="0" y="85" width="${W}" height="13" fill="${L.b}" clip-path="url(#c${id})"/>
+<rect x="55" y="73" width="300" height="8" fill="${L.s}" clip-path="url(#c${id})"/>
+${wins(68,106,326,13)}
+<path d="${VT}" fill="${L.t}"/>
+<path d="${TBL}" fill="${L.f}"/>
+<path d="${TBR}" fill="${L.f}"/>
+<path d="${FP}" fill="none" stroke="rgba(0,0,0,.1)" stroke-width="1.2"/>
+</g></svg>`;
+}
+
+function buildSVG(typeCode, callsign, heading, rowIdx) {
+  const shape = getShape(typeCode);
+  const L = getLivery(callsign);
+  const flip = typeof heading === 'number' && heading > 180;
+  const id = rowIdx;
+  switch(shape) {
+    case 'WB':   return nbSVG(L, id, flip, true);
+    case 'RJ':   return rjSVG(L, id, flip);
+    case 'CRJ':  return crjSVG(L, id, flip);
+    case 'PROP': return rjSVG(L, id, flip); // simplified
+    default:     return nbSVG(L, id, flip, false);
+  }
+}
+
+// ── State ──
+let userLat = null, userLon = null;
+let lastFlights = [];
+const RC = {}; // route cache: key → {from, to} or null
+let rQueue = Promise.resolve();
+
+// ── Distance (miles) ──
+function mi(a1, b1, a2, b2) {
+  if (!a2 || !b2) return Infinity;
+  const R=3958.8, dr=(a2-a1)*Math.PI/180, dc=(b2-b1)*Math.PI/180;
+  const a=Math.sin(dr/2)**2+Math.cos(a1*Math.PI/180)*Math.cos(a2*Math.PI/180)*Math.sin(dc/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// ── Bearing from user to aircraft ──
+function bearing(lat1, lon1, lat2, lon2) {
+  const dL = (lon2-lon1)*Math.PI/180;
+  const y  = Math.sin(dL)*Math.cos(lat2*Math.PI/180);
+  const x  = Math.cos(lat1*Math.PI/180)*Math.sin(lat2*Math.PI/180)
+            - Math.sin(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.cos(dL);
+  return ((Math.atan2(y,x)*180/Math.PI)+360)%360;
+}
+function compass(deg) {
+  return ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(deg/22.5)%16];
+}
+
+// ── Distance tier → display state ──
+function distState(miles) {
+  if (miles <= 10) return { label:'OVERHEAD', dot:'#50C878', opacity:1.0,   dim:false };
+  if (miles <= 25) return { label:'NEARBY',   dot:'#F5A623', opacity:0.82,  dim:false };
+  if (miles <= 50) return { label:'IN RANGE', dot:'#C4821C', opacity:0.62,  dim:true  };
+  return              { label:'DISTANT',   dot:'#666666', opacity:0.42,  dim:true  };
+}
+
+// ── AirLabs route lookup ──
+async function lookupRoute(cs) {
+  if (RC[cs] !== undefined) return;
+  RC[cs] = null;
+  rQueue = rQueue
+    .then(() => new Promise(r => setTimeout(r, 1600)))
+    .then(async () => {
+      try {
+        const r = await fetch(
+          `https://airlabs.co/api/v9/flight?flight_icao=${encodeURIComponent(cs)}&api_key=${AIRLABS_KEY}`,
+          { signal: AbortSignal.timeout(8000), cache:'no-store' }
+        );
+        if (r.ok) {
+          const d = await r.json();
+          const f = d?.response;
+          if (f?.dep_iata && f?.arr_iata) {
+            RC[cs] = { from: f.dep_iata, to: f.arr_iata };
+            render(lastFlights);
+          }
+        }
+      } catch(e) {}
+    });
+}
+
+// ── Fetch flights — auto-expanding radius ──
+const RADII = [10, 25, 50, 100];
+let activeRadius = 10;
+
+async function fetchAt(r) {
+  const resp = await fetch(
+    `https://api.adsb.lol/v2/lat/${userLat}/lon/${userLon}/dist/${r}`,
+    { signal: AbortSignal.timeout(8000), cache:'no-store' }
+  );
+  const d = await resp.json();
+  return (d.ac||[])
+    .filter(a => {
+      if (!a.flight) return false;
+      const cs = a.flight.trim().toUpperCase();
+      return /^[A-Z]{2,3}\d/.test(cs) && !/^N\d/.test(cs);
+    })
+    .map(a => ({ ...a, _d: mi(userLat, userLon, a.lat, a.lon) }))
+    .filter(a => isFinite(a._d))
+    .sort((a,b) => a._d - b._d)
+    .slice(0, 3);
+}
+
+async function fetchFlights() {
+  if (!userLat) return;
+  try {
+    let ac = [];
+    for (const r of RADII) {
+      ac = await fetchAt(r);
+      activeRadius = r;
+      if (ac.length >= 1) break; // found at least one — stop expanding
+    }
+
+    // Seed routes from raw ADS-B data
+    ac.forEach(a => {
+      if (a.dep_iata && a.arr_iata) {
+        const cs = a.flight.trim().toUpperCase();
+        if (RC[cs] === undefined) RC[cs] = { from: a.dep_iata, to: a.arr_iata };
+      }
+    });
+
+    lastFlights = ac;
+    render(ac);
+
+    // Queue route lookups for unknowns
+    ac.forEach(a => {
+      const cs = a.flight.trim().toUpperCase();
+      if (RC[cs] === undefined) lookupRoute(cs);
+    });
+
+    document.getElementById('upd').textContent =
+      'UPDATED ' + new Date().toLocaleTimeString('en-US',{hour12:false});
+    document.getElementById('radius-lbl').textContent = activeRadius + ' MI RADIUS';
+  } catch(e) {
+    console.warn('[fetch]', e.message);
+    // Show visible error — most likely cause is loading from local file
+    const isLocal = location.protocol === 'file:' || location.protocol === 'content:';
+    for (let i = 0; i < 3; i++) {
+      const row = document.getElementById(`r${i}`);
+      if (i === 0) {
+        row.innerHTML = isLocal
+          ? `<div style="padding:0 20px;font-size:10px;letter-spacing:3px;opacity:.6;line-height:1.8;">
+              NETWORK BLOCKED<br>
+              <span style="opacity:.5;font-size:9px;">OPEN FROM NETLIFY, NOT LOCAL FILE</span>
+            </div>`
+          : `<div style="padding:0 20px;font-size:10px;letter-spacing:3px;opacity:.6;">
+              FETCH ERROR — ${e.message.toUpperCase()}
+            </div>`;
+      } else {
+        row.innerHTML = '<div class="pempty">— &nbsp; — &nbsp; —</div>';
+      }
+    }
+  }
+}
+
+// ── Render ──
+function render(ac) {
+  for (let i = 0; i < 3; i++) {
+    const row = document.getElementById(`r${i}`);
+    const a = ac[i];
+    if (!a) {
+      row.innerHTML = `<div class="pempty">— &nbsp; — &nbsp; —</div>`;
+      row.style.opacity = '';
+      row.style.borderLeft = '';
+      continue;
+    }
+    const cs   = a.flight.trim().toUpperCase();
+    const route = RC[cs];
+    const alt  = a.alt_baro && a.alt_baro !== 'ground' ? parseInt(a.alt_baro) : null;
+    const spd  = a.gs ? Math.round(a.gs) : null;
+    const hdg  = a.track ? Math.round(a.track) : null;
+    const tc   = (a.t||'').toUpperCase();
+    const typeName = FTYPES[tc] || (tc || '');
+    const name = alName(cs);
+
+    // Distance state drives visual treatment
+    const state = distState(a._d);
+    const brng  = (userLat && a.lat) ? bearing(userLat, userLon, a.lat, a.lon) : null;
+    const dir   = brng !== null ? compass(brng) : '';
+    const distStr = a._d ? a._d.toFixed(1) : '?';
+
+    // Distance display: overhead just shows miles, others show miles + bearing
+    const distDisplay = state.label === 'OVERHEAD'
+      ? `${distStr} MI`
+      : `${distStr} MI ${dir}`;
+
+    // Apply row-level opacity for dimming
+    row.style.opacity = state.opacity;
+
+    // Colored left accent bar based on state
+    row.style.borderLeft = `3px solid ${state.dot}40`;
+
+    const svg = buildSVG(tc, cs, hdg, i);
+
+    const from = route?.from || '';
+    const to   = route?.to   || '';
+    const routeStr = from && to
+      ? `${from} &thinsp;→&thinsp; ${to}`
+      : route === null
+        ? '—'
+        : '<span style="opacity:.3;font-size:.7em;letter-spacing:3px">ROUTING...</span>';
+    const cityStr = from && to ? `${AP[from]||from} → ${AP[to]||to}` : '';
+    const altStr  = alt ? alt.toLocaleString() : '—';
+    const spdStr  = spd ? spd : '—';
+
+    // State badge: dot + label
+    const badge = `<span style="display:inline-flex;align-items:center;gap:5px;font-size:8px;letter-spacing:3px;opacity:.7;">
+      <span style="width:6px;height:6px;border-radius:50%;background:${state.dot};display:inline-block;flex-shrink:0;"></span>
+      ${state.label}
+    </span>`;
+
+    row.innerHTML = `
+      <div class="part" style="opacity:${state.dim ? 0.7 : 1}">${svg}</div>
+      <div class="pinfo">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
+          <div class="pfl">${cs}</div>
+          ${badge}
+        </div>
+        <div class="pan">${name}</div>
+        <div class="pro">${routeStr}</div>
+        ${cityStr ? `<div class="pci">${cityStr}</div>` : ''}
+        <div class="pst">
+          <div><div class="psv">${altStr}</div><div class="psl">FT MSL</div></div>
+          <div><div class="psv">${spdStr}</div><div class="psl">KNOTS</div></div>
+          <div>
+            <div class="psv" style="color:${state.dot}">${distDisplay}</div>
+            <div class="psl">DISTANCE</div>
+          </div>
+          ${hdg !== null ? `<div><div class="psv">${hdg}°</div><div class="psl">HEADING</div></div>` : ''}
+        </div>
+        ${typeName ? `<div class="pty">${typeName}</div>` : ''}
+      </div>`;
+  }
+}
+
+// ── Location ──
+function showZipOverlay() {
+  document.getElementById('zip-overlay').style.display = 'flex';
+  const input = document.getElementById('zip-input');
+  const btn   = document.getElementById('zip-btn');
+  const err   = document.getElementById('zip-err');
+  const go = () => {
+    const z = input.value.trim();
+    if (!/^\d{5}$/.test(z)) { err.textContent = 'ENTER A VALID 5-DIGIT ZIP'; return; }
+    err.textContent = '';
+    document.getElementById('zip-overlay').style.display = 'none';
+    resolveZip(z);
+  };
+  btn.addEventListener('click', go);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  setTimeout(() => input.focus(), 100);
+}
+
+function initLoc() {
+  // Try: 1) saved lat/lon from this app
+  //      2) saved lat/lon from flightboard (same domain)
+  //      3) GPS
+  //      4) ZIP overlay
+  const saved = localStorage.getItem('oh_latlon') || localStorage.getItem('flightboard_loc');
+  if (saved) {
+    try {
+      [userLat, userLon] = JSON.parse(saved);
+      const loc = `${Math.abs(userLat).toFixed(3)}° ${userLat>=0?'N':'S'}, ${Math.abs(userLon).toFixed(3)}° ${userLon>=0?'E':'W'}`;
+      document.getElementById('loc').textContent = loc;
+      fetchFlights();
+    } catch(e) { userLat = null; }
+  }
+  // Always try GPS to update to current position
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      p => {
+        userLat = p.coords.latitude;
+        userLon = p.coords.longitude;
+        localStorage.setItem('oh_latlon', JSON.stringify([userLat, userLon]));
+        const loc = `${userLat.toFixed(3)}° N, ${Math.abs(userLon).toFixed(3)}° W`;
+        document.getElementById('loc').textContent = loc;
+        fetchFlights();
+      },
+      () => {
+        // GPS denied/unavailable
+        if (!userLat) {
+          // No saved location either — show ZIP overlay
+          const zip = localStorage.getItem('oh_zip');
+          if (zip) resolveZip(zip);
+          else showZipOverlay();
+        }
+        // If we had a saved location, already fetching — GPS failure is fine
+      },
+      { timeout: 8000, maximumAge: 300000 }
+    );
+  } else if (!userLat) {
+    showZipOverlay();
+  }
+}
+
+async function resolveZip(zip) {
+  document.getElementById('loc').textContent = 'RESOLVING...';
+  try {
+    const r = await fetch(`https://api.zippopotam.us/us/${zip}`, {signal: AbortSignal.timeout(6000)});
+    if (!r.ok) throw new Error('bad zip');
+    const d = await r.json();
+    userLat = parseFloat(d.places[0].latitude);
+    userLon = parseFloat(d.places[0].longitude);
+    const city  = d.places[0]['place name'];
+    const state = d.places[0]['state abbreviation'];
+    document.getElementById('loc').textContent = `${city.toUpperCase()}, ${state}`;
+    localStorage.setItem('oh_latlon', JSON.stringify([userLat, userLon]));
+    localStorage.setItem('oh_zip', zip);
+    fetchFlights();
+  } catch(e) {
+    document.getElementById('loc').textContent = 'ZIP ERROR';
+    const err = document.getElementById('zip-err');
+    if (err) err.textContent = 'COULD NOT RESOLVE ZIP — TRY AGAIN';
+    showZipOverlay();
+  }
+}
+
+// ── Clock ──
+function tick() {
+  document.getElementById('clk').textContent =
+    new Date().toLocaleTimeString('en-US',{hour12:false});
+}
+setInterval(tick, 1000); tick();
+
+// ── Boot ──
+setInterval(fetchFlights, 30000);
+initLoc();
+</script>
+</body>
+</html>
