@@ -180,7 +180,12 @@ A318:'319',A319:'319',A320:'320',A321:'321',A20N:'320',A21N:'321',A19N:'319',A32
 A332:'332',A333:'333',A338:'338',A339:'339',A342:'332',A343:'333',A345:'332',A346:'332',
 A359:'359',A35K:'35K',A380:'380',A388:'388',
 E170:'E75',E175:'E75',E75L:'E75',E70:'E75',E190:'E90',E195:'E90',E290:'E90',E295:'E90',
-CRJ1:'CR9',CRJ2:'CR9',CRJ7:'CR7',CRJ9:'CR9',CRJX:'CR9',CR7W:'CR7',CR9W:'CR9'};
+CRJ1:'CR9',CRJ2:'CR9',CRJ7:'CR7',CRJ9:'CR9',CRJX:'CR9',CR7W:'CR7',CR9W:'CR9',
+B712:'738',B717:'738',
+BCS1:'319',BCS3:'320',
+A306:'332',A310:'332',
+MD82:'738',MD83:'738',MD88:'738',MD90:'738',MD11:'772',
+B721:'73H',B722:'73H'};
 
 const AP={ATL:'Atlanta',BOS:'Boston',CLT:'Charlotte',DEN:'Denver',DFW:'Dallas',DTW:'Detroit',
 EWR:'Newark',IAD:'Washington',IAH:'Houston',JFK:'New York',LAX:'Los Angeles',LGA:'New York',
@@ -201,7 +206,8 @@ B752:'Boeing 757-200',B763:'Boeing 767-300',B772:'Boeing 777-200',B77W:'Boeing 7
 B788:'Boeing 787-8',B789:'Boeing 787-9',B78X:'Boeing 787-10',B744:'Boeing 747-400',
 A332:'Airbus A330-200',A333:'Airbus A330-300',A359:'Airbus A350-900',A35K:'Airbus A350-1000',
 A380:'Airbus A380',A388:'Airbus A380-800',E175:'Embraer E175',E75L:'Embraer E175',
-E190:'Embraer E190',CRJ7:'CRJ-700',CRJ9:'CRJ-900'};
+E190:'Embraer E190',CRJ7:'CRJ-700',CRJ9:'CRJ-900',
+B712:'Boeing 717',BCS1:'Airbus A220-100',BCS3:'Airbus A220-300'};
 
 const ALNAMES={DAL:'Delta Air Lines',UAL:'United Airlines',AAL:'American Airlines',
 SWA:'Southwest Airlines',AAY:'Allegiant Air',NKS:'Spirit Airlines',ASA:'Alaska Airlines',
@@ -220,7 +226,18 @@ const DEMO=[
 ];
 
 function alOf(cs){return(cs||'').replace(/\d.*$/,'').toUpperCase();}
-function livSrc(icao,tc){const t=TMAP[tc];return(HAS_LIVERY.has(icao)&&t)?`/liveries/${icao}_${t}.webp`:null;}
+// Default type per airline when ADS-B type is missing/unknown
+const DEFAULT_TYPE={DAL:'738',UAL:'738',AAL:'321',SWA:'738',AAY:'320',NKS:'320',
+ASA:'738',JBU:'320',FFT:'320',ENY:'E75',GJS:'CR9',RPA:'E75',SKW:'E75',
+ACA:'738',WJA:'738',DLH:'738',BAW:'77W',AFR:'320',KLM:'738',IBE:'320',
+EZY:'320',RYR:'738',SAS:'320',FIN:'320',THY:'738',UAE:'388',QTR:'789',
+ETD:'789',SIA:'359',CPA:'359',QFA:'738',ANZ:'789',KAL:'77W',JAL:'789',ANA:'789'};
+
+function livSrc(icao,tc){
+  if(!HAS_LIVERY.has(icao))return null;
+  const t=TMAP[tc]||DEFAULT_TYPE[icao];
+  return t?`/liveries/${icao}_${t}.webp`:null;
+}
 
 let uLat=null,uLon=null,last=[],demoMode=false,posterNum=Math.floor(Math.random()*900)+100;
 const RC={};let rQ=Promise.resolve();
