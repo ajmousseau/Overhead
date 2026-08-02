@@ -546,7 +546,7 @@ select.ge-in option{background:#14161A;color:#fff;font-size:15px;}
 
 <script>
 'use strict';
-const APP_VERSION='1.6.0';   // bump on every push
+const APP_VERSION='1.6.1';   // bump on every push
 const AIRLABS='7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
 const RADII=[10,25,50,100];
 
@@ -862,7 +862,7 @@ let rcDirty=false;
 setInterval(()=>{if(rcDirty){try{localStorage.setItem('oh_rc',JSON.stringify(RC));}catch(e){}rcDirty=false;}},20000);
 let rQ=Promise.resolve();
 
-function fetchT(u,ms){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||9000);
+function fetchT(u,ms,opts){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||9000);
   return fetch(u,{signal:c.signal,...(opts||{})}).finally(()=>clearTimeout(t));}
 function hav(a1,b1,a2,b2){if(!a2||!b2)return Infinity;
   const R=3958.8,dr=(a2-a1)*Math.PI/180,dc=(b2-b1)*Math.PI/180;
