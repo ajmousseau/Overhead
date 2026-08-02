@@ -318,6 +318,16 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
 }
 
 /* -- ZIP -- */
+#logview{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:1900;
+  align-items:center;justify-content:center;overflow-y:auto;}
+#logview.show{display:flex;}
+.lv-inner{max-width:520px;padding:34px 28px;text-align:center;font-family:inherit;}
+.lv-title{font-size:13px;letter-spacing:.45em;text-transform:uppercase;opacity:.5;margin-bottom:22px;color:#fff;}
+.lv-big{font-size:38px;letter-spacing:.1em;color:#fff;line-height:1.2;}
+.lv-sub{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.4);margin:4px 0 18px;}
+.lv-row{font-size:11px;letter-spacing:.12em;color:rgba(255,255,255,.75);line-height:2;}
+.lv-sec{font-size:8px;letter-spacing:.35em;text-transform:uppercase;color:rgba(255,255,255,.35);margin:16px 0 6px;}
+
 #zo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:2000;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:Georgia,serif;}
 #zo.show{display:flex;}
 .zt{font-size:9px;letter-spacing:.45em;color:rgba(255,255,255,.5);text-transform:uppercase;}
@@ -405,6 +415,14 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
     <div class="slot" id="s1"></div>
     <div class="slot" id="s2"></div>
     <div id="colophon">&mdash;</div>
+  </div>
+</div>
+
+<div id="logview">
+  <div class="lv-inner">
+    <div class="lv-title">Flight Log</div>
+    <div id="lv-body"></div>
+    <button class="ptog" onclick="document.getElementById('logview').classList.remove('show')" style="margin-top:18px;">Close</button>
   </div>
 </div>
 
@@ -532,6 +550,57 @@ const DEMO_SCENES=[
 let demoScene=0, demoTimer=null;
 
 function alOf(cs){return(cs||'').replace(/\d.*$/,'').toUpperCase();}
+
+// -- Rare Bird scoring --
+// Widebody types and unusual carriers score high; the everyday overhead mix scores 0.
+const HEAVY_TYPES={B744:5,B748:5,B741:5,B742:5,B743:5,A388:5,A380:5,
+  B77W:3,B772:3,B773:3,B77L:3,B788:3,B789:3,B78X:3,
+  A332:3,A333:3,A338:3,A339:3,A359:3,A35K:3,
+  B763:2,B762:2,B764:2,B752:2,B753:2};
+const COMMON_CARRIERS=new Set(['DAL','UAL','AAL','SWA','AAY','NKS','FFT','JBU','ASA',
+  'ENY','GJS','RPA','SKW','EDV','PDT','FDX','UPS','ACA','WJA']);
+function rareScore(a){
+  const cs=(a.flight||'').trim().toUpperCase();
+  const al=alOf(cs), tc=(a.t||'').toUpperCase();
+  let s=0;
+  s+=HEAVY_TYPES[tc]||0;
+  if(!COMMON_CARRIERS.has(al))s+=3;   // foreign / unusual operator
+  return s;
+}
+
+// -- Flight Log — a birder's life list in localStorage --
+function loadLog(){try{return JSON.parse(localStorage.getItem('oh_log')||'{}');}catch(e){return{};}}
+function saveLog(l){try{localStorage.setItem('oh_log',JSON.stringify(l));}catch(e){}}
+function logFlights(ac){
+  if(!ac||!ac.length)return;
+  const log=loadLog();
+  const today=new Date().toISOString().slice(0,10);
+  let changed=false;
+  ac.forEach(a=>{
+    const cs=a.flight.trim().toUpperCase();
+    const key=cs+'_'+today;   // one entry per flight per day
+    const prev=log[key];
+    if(!prev){
+      log[key]={cs,al:alOf(cs),t:(a.t||'').toUpperCase(),d:+a._d.toFixed(1),
+                r:a._r||0,dt:today};
+      changed=true;
+    }else if(a._d<prev.d){
+      prev.d=+a._d.toFixed(1);changed=true;   // track closest approach
+    }
+  });
+  if(changed)saveLog(log);
+}
+function logStats(){
+  const log=loadLog();
+  const entries=Object.values(log);
+  const byAl={},byT={};
+  entries.forEach(e=>{byAl[e.al]=(byAl[e.al]||0)+1;byT[e.t]=(byT[e.t]||0)+1;});
+  const rare=entries.filter(e=>e.r>=3).sort((a,b)=>b.r-a.r).slice(0,10);
+  const closest=[...entries].sort((a,b)=>a.d-b.d).slice(0,5);
+  return{total:entries.length,airlines:Object.keys(byAl).length,
+    types:Object.keys(byT).length,byAl,rare,closest,
+    since:entries.length?entries.map(e=>e.dt).sort()[0]:null};
+}
 function apName(code){
   if(!code)return '';
   const n=AP[code];
@@ -647,8 +716,17 @@ async function fetchFlights(){
         const cs=a.flight.trim().toUpperCase();
         if(!/^[A-Z]{2,3}\d/.test(cs)||/^N\d/.test(cs))return false;
         return livSrc(alOf(cs),(a.t||'').toUpperCase())!==null;
-      }).map(a=>({...a,_d:hav(uLat,uLon,a.lat,a.lon)}))
-        .filter(a=>isFinite(a._d)).sort((a,b)=>a._d-b._d).slice(0,3);
+      }).map(a=>({...a,_d:hav(uLat,uLon,a.lat,a.lon),_r:rareScore(a)}))
+        .filter(a=>isFinite(a._d)).sort((a,b)=>a._d-b._d).slice(0,6);
+      // Rare bird priority: a notable aircraft in range jumps to slot 1
+      best.sort((a,b)=>a._d-b._d);
+      const rare=best.filter(a=>a._r>=3).sort((a,b)=>b._r-a._r||a._d-b._d)[0];
+      if(rare&&best.indexOf(rare)>0){
+        best.splice(best.indexOf(rare),1);
+        best.unshift(rare);
+      }
+      best=best.slice(0,3);
+      logFlights(best);
     }
   }catch(e){}
 
@@ -741,6 +819,32 @@ function hardRefresh(){
   window.location.replace(u.toString());
 }
 function togglePalette(){document.getElementById('palette').classList.toggle('show');}
+function showLog(){
+  const s=logStats();
+  const el=document.getElementById('lv-body');
+  if(!s.total){el.innerHTML='<div class="lv-row">No flights logged yet.<br>The log builds automatically as aircraft pass.</div>';}
+  else{
+    const topAl=Object.entries(s.byAl).sort((a,b)=>b[1]-a[1]).slice(0,5)
+      .map(([al,n])=>`${ALNAMES[al]||al} &mdash; ${n}`).join('<br>');
+    const rare=s.rare.map(e=>`${ALNAMES[e.al]||e.al} ${FTYPES[e.t]||e.t} &middot; ${e.dt}`).join('<br>')||'&mdash;';
+    const close=s.closest.map(e=>`${e.cs} &middot; ${e.d} mi &middot; ${e.dt}`).join('<br>');
+    el.innerHTML=
+      `<div class="lv-big">${s.total}</div><div class="lv-sub">aircraft since ${s.since}</div>`+
+      `<div class="lv-row">${s.airlines} airlines &middot; ${s.types} aircraft types</div>`+
+      `<div class="lv-sec">Most seen</div><div class="lv-row">${topAl}</div>`+
+      `<div class="lv-sec">Rare birds</div><div class="lv-row">${rare}</div>`+
+      `<div class="lv-sec">Closest approaches</div><div class="lv-row">${close}</div>`;
+  }
+  document.getElementById('logview').classList.add('show');
+}
+// Long-press the corner dot for the log; short tap keeps opening the palette
+(function(){
+  const dot=document.getElementById('brand');
+  let t=null,fired=false;
+  dot.addEventListener('pointerdown',()=>{fired=false;t=setTimeout(()=>{fired=true;showLog();},900);});
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>dot.addEventListener(ev,()=>{if(t){clearTimeout(t);t=null;}}));
+  dot.addEventListener('click',e=>{if(fired){e.stopImmediatePropagation();e.preventDefault();}},true);
+})();
 document.addEventListener('click',e=>{
   const p=document.getElementById('palette');
   if(!p.contains(e.target)&&e.target.id!=='brand')p.classList.remove('show');});
@@ -921,6 +1025,18 @@ function openFR24(cs){
   stage.addEventListener('contextmenu',e=>{
     if(e.target.closest('.slot')?.dataset.cs)e.preventDefault();
   });
+})();
+
+// -- Burn-in protection: slow 0-2px drift of the whole poster --
+(function(){
+  const app=document.getElementById('poster');
+  let step=0;
+  const path=[[0,0],[1,0],[2,1],[1,2],[0,2],[-1,1],[-2,0],[-1,-1],[0,-2],[1,-1]];
+  setInterval(()=>{
+    step=(step+1)%path.length;
+    const [dx,dy]=path[step];
+    app.style.transform=`translate(${dx}px,${dy}px)`;
+  },120000);   // one small move every 2 minutes, full cycle 20 min
 })();
 
 // -- Screen wake lock (keeps display on — bedside/wall use) --
