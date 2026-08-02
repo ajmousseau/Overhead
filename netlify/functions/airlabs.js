@@ -1,6 +1,6 @@
 // netlify/functions/airlabs.js — shared AirLabs lookup (CommonJS, blobs optional)
 const ALLOWED = ['https://inspiring-chimera-6095cd.netlify.app'];
-const KEY = '7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
+const KEY = process.env.AIRLABS_KEY || '7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
 const MONTHLY_BUDGET = 24000;
 
 // Blobs if available; otherwise warm-instance memory cache
