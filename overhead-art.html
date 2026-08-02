@@ -145,6 +145,64 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
 .plane-cap b{font-weight:400;color:var(--fg);letter-spacing:.14em;}
 .plane-cap .sep{margin:0 .6em;opacity:.5;}
 
+/* --- LANDSCAPE / GALLERY GRID --- */
+@media (orientation:landscape){
+  #stage{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:1fr 1fr;
+    flex:1;min-height:0;
+  }
+  .slot{
+    display:flex;flex-direction:column;justify-content:center;
+    min-height:0;min-width:0;overflow:hidden;
+    padding:clamp(8px,1.5vh,20px) clamp(10px,1.5vw,24px);
+  }
+  /* Hairline dividers between cells */
+  #s0{border-right:1px solid var(--line);border-bottom:1px solid var(--line);}
+  #s1{border-bottom:1px solid var(--line);}
+  #s2{border-right:1px solid var(--line);}
+
+  /* Planes centered in cells, no stagger */
+  .slot .plane-wrap{justify-content:center !important;padding:0 !important;align-items:center;}
+  .slot .plane-wrap img.livery{max-width:92%;max-height:100%;}
+  .slot .plane-cap{text-align:center !important;padding:6px 4px 0;white-space:normal;line-height:1.5;}
+
+  /* Colophon becomes the 4th cell — gallery placard */
+  #colophon{
+    grid-column:2;grid-row:2;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    gap:clamp(6px,1.5vh,14px);
+    padding:clamp(10px,2vh,26px);
+    border:none;
+    white-space:normal;
+    font-size:calc(clamp(9px,1vw,14px) * var(--textscale));
+    line-height:1.9;
+    text-align:center;
+  }
+  #colophon .colo-sig{display:none;}
+  #colophon .colo-clock{
+    font-size:clamp(34px,4.5vw,72px);
+    font-style:normal;
+    letter-spacing:.12em;
+    color:var(--fg);
+    font-variant-numeric:tabular-nums;
+    line-height:1;
+  }
+  #colophon .colo-sub{
+    font-style:italic;
+    font-size:clamp(10px,1.1vw,16px);
+    letter-spacing:.14em;
+    color:var(--fg2);
+  }
+}
+
+/* Portrait/base: signature only */
+@media (orientation:portrait){
+  #colophon .colo-clock,#colophon .colo-sub{display:none;}
+}
+
 /* --- PORTRAIT / POSTER MODE --- */
 @media (orientation:portrait){
   #poster{padding:clamp(24px,4vh,56px) clamp(18px,5vw,44px) clamp(16px,2.5vh,32px);}
@@ -289,9 +347,8 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
     <div class="slot" id="s0"><div class="empty-note">Listening for aircraft</div></div>
     <div class="slot" id="s1"></div>
     <div class="slot" id="s2"></div>
+    <div id="colophon">&mdash;</div>
   </div>
-
-  <div id="colophon">&mdash;</div>
 </div>
 
 <div id="zo">
@@ -418,6 +475,35 @@ function fmtDate(){
   const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
   return months[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();
 }
+function fmtTime(){
+  const d=new Date();
+  let h=d.getHours();const m=String(d.getMinutes()).padStart(2,'0');
+  const ap=h>=12?'p.m.':'a.m.';h=h%12||12;
+  return h+':'+m+'&thinsp;'+ap;
+}
+function placeStr(){
+  const c=localStorage.getItem('oh_city')||'';
+  const s=localStorage.getItem('oh_state')||'';
+  return c?(s?`${c}, ${s}`:c):'';
+}
+let lastCount=3;
+function updateColophon(n){
+  lastCount=n;
+  const place=placeStr();
+  const over=place?` over ${place}`:'';
+  const cnt=n===1?'one aircraft':n===2?'two aircraft':n===3?'three aircraft':n+' aircraft';
+  document.getElementById('colophon').innerHTML=
+    // Landscape placard structure
+    `<div class="colo-clock">${fmtTime()}</div>`+
+    `<div class="colo-sub">${fmtDate()}${place?' &nbsp;&middot;&nbsp; '+place:''}</div>`+
+    // Portrait signature sentence
+    `<div class="colo-sig"><span class="rule"></span><span class="num">&#8470; ${posterNum}</span>&ensp;&mdash;&ensp;Received ${fmtDate()} at ${fmtTime()}${over}, ${cnt}<span class="rule"></span></div>`;
+}
+// Keep the placard clock live
+setInterval(()=>{
+  const el=document.querySelector('.colo-clock');
+  if(el)el.innerHTML=fmtTime();
+},15000);
 // Default type per airline when ADS-B type is missing/unknown
 const DEFAULT_TYPE={DAL:'738',UAL:'738',AAL:'321',SWA:'738',AAY:'320',NKS:'320',
 ASA:'738',JBU:'320',FFT:'320',ENY:'E75',GJS:'CR9',RPA:'E75',SKW:'E75',
@@ -544,8 +630,7 @@ function renderDemo(){
     slot.style.opacity='0';
     setTimeout(()=>{slot.innerHTML=slotHTML(src,cap,scale);slot.style.opacity='1';},350);
   });
-  document.getElementById('colophon').innerHTML=
-    `<span class="rule"></span><span class="num">&#8470; ${posterNum}</span>&ensp;&mdash;&ensp;Received ${fmtDate()}, three aircraft in composition<span class="rule"></span>`;
+  updateColophon(3);
 }
 
 function render(ac){
@@ -564,14 +649,7 @@ function render(ac){
     slot.innerHTML=slotHTML(livSrc(icao,tc),cap,livScale(icao));
   }
   // Colophon: ? · date · coords · location · N aircraft
-  if(uLat){
-    const coords=Math.abs(uLat).toFixed(4)+'\u00b0'+(uLat>=0?'N':'S')+' '+Math.abs(uLon).toFixed(4)+'\u00b0'+(uLon>=0?'E':'W');
-    const locName=localStorage.getItem('oh_city')||'';
-    const over=locName?` over ${locName}`:'';
-    const n=ac.length===1?'one aircraft':ac.length===2?'two aircraft':ac.length===3?'three aircraft':ac.length+' aircraft';
-    document.getElementById('colophon').innerHTML=
-      `<span class="rule"></span><span class="num">&#8470; ${posterNum}</span>&ensp;&mdash;&ensp;Received ${fmtDate()}${over}, ${coords}, ${n}<span class="rule"></span>`;
-  }
+  if(uLat)updateColophon(ac.length);
 }
 
 // -- Controls --
@@ -659,6 +737,7 @@ async function resolveZip(z){
     const d=await r.json();
     uLat=parseFloat(d.places[0].latitude);uLon=parseFloat(d.places[0].longitude);
     localStorage.setItem('oh_city',d.places[0]['place name']);
+    localStorage.setItem('oh_state',d.places[0]['state abbreviation']||'');
     localStorage.setItem('oh_ll',JSON.stringify([uLat,uLon]));localStorage.setItem('oh_zip',z);
     fetchFlights();
   }catch(e){showZip();}}
@@ -668,7 +747,16 @@ function initLoc(){
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(
       p=>{uLat=p.coords.latitude;uLon=p.coords.longitude;
-        localStorage.setItem('oh_ll',JSON.stringify([uLat,uLon]));fetchFlights();},
+        localStorage.setItem('oh_ll',JSON.stringify([uLat,uLon]));
+        // Reverse geocode for city/state (free endpoint, no key)
+        fetchT(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${uLat}&longitude=${uLon}&localityLanguage=en`,7000)
+          .then(r=>r.ok?r.json():null)
+          .then(g=>{if(g){
+            if(g.city||g.locality)localStorage.setItem('oh_city',g.city||g.locality);
+            if(g.principalSubdivisionCode)localStorage.setItem('oh_state',(g.principalSubdivisionCode.split('-')[1])||'');
+            render(last);
+          }}).catch(()=>{});
+        fetchFlights();},
       ()=>{if(!uLat){const z=localStorage.getItem('oh_zip');if(z)resolveZip(z);else showZip();}},
       {timeout:8000,maximumAge:300000});
   }else if(!uLat)showZip();}
