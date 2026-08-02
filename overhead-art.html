@@ -35,6 +35,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   --fontpick: var(--f-georgia);
   --textscale: 1;
   --planescale: 1;
+  --clockscale: 1;
 }
 body{font-family:var(--fontpick);}
 
@@ -183,7 +184,7 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
   }
   #colophon .colo-sig{display:none;}
   #colophon .colo-clock{
-    font-size:clamp(34px,4.5vw,72px);
+    font-size:calc(clamp(34px,4.5vw,72px) * var(--clockscale));
     font-style:normal;
     letter-spacing:.12em;
     color:var(--fg);
@@ -192,15 +193,37 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
   }
   #colophon .colo-sub{
     font-style:italic;
-    font-size:clamp(10px,1.1vw,16px);
+    font-size:calc(clamp(10px,1.1vw,16px) * var(--clockscale));
     letter-spacing:.14em;
     color:var(--fg2);
   }
 }
 
-/* Portrait/base: signature only */
+/* Portrait/base: signature only (clock off) */
 @media (orientation:portrait){
-  #colophon .colo-clock,#colophon .colo-sub{display:none;}
+  body:not([data-pclock]) #colophon .colo-clock,
+  body:not([data-pclock]) #colophon .colo-sub{display:none;}
+
+  /* Portrait clock mode — clock block replaces signature */
+  body[data-pclock] #colophon .colo-sig{display:none;}
+  body[data-pclock] #colophon{
+    display:flex;flex-direction:column;align-items:center;
+    gap:4px;white-space:normal;
+    padding:clamp(10px,1.8vh,22px) 0;
+  }
+  body[data-pclock] #colophon .colo-clock{
+    font-style:normal;
+    font-size:calc(clamp(30px,9vw,68px) * var(--clockscale));
+    letter-spacing:.12em;color:var(--fg);
+    font-variant-numeric:tabular-nums;line-height:1;
+  }
+  body[data-pclock] #colophon .colo-sub{
+    font-style:italic;
+    font-size:calc(clamp(9px,2.2vw,14px) * var(--clockscale));
+    letter-spacing:.14em;color:var(--fg2);
+  }
+  /* Position: top puts the colophon before the planes */
+  body[data-pclock="top"] #colophon{order:-1;}
 }
 
 /* --- PORTRAIT / POSTER MODE --- */
@@ -335,6 +358,18 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
       <button class="ptog ppick" data-p="1.15">2</button>
       <button class="ptog ppick" data-p="1.3">3</button>
     </div>
+    <div class="pal-row">
+      <span class="pal-lbl">Clock</span>
+      <button class="ptog kpick act" data-k="1">S</button>
+      <button class="ptog kpick" data-k="1.35">M</button>
+      <button class="ptog kpick" data-k="1.7">L</button>
+    </div>
+    <div class="pal-row">
+      <span class="pal-lbl">P-Clock</span>
+      <button class="ptog qpick act" data-q="off">Off</button>
+      <button class="ptog qpick" data-q="top">Top</button>
+      <button class="ptog qpick" data-q="bottom">Bottom</button>
+    </div>
     <div class="pal-divider"></div>
     <div class="pal-toggles">
       <button class="ptog" id="demobtn" onclick="toggleDemo()">Demo</button>
@@ -460,6 +495,11 @@ const DEMO_SCENES=[
     {cs:'EZY',tc:'A21N',name:'easyJet',from:'LGW',to:'BCN',alt:35000},
     {cs:'RYR',tc:'B38M',name:'Ryanair',from:'STN',to:'DUB',alt:34000},
     {cs:'CFE',tc:'E190',name:'BA CityFlyer',from:'LCY',to:'EDI',alt:32000},
+  ],
+  [ // Scene 8 — Delta Fleet
+    {cs:'DAL',tc:'A21N',name:'Delta Air Lines',from:'MSP',to:'ATL',alt:34000},
+    {cs:'DAL',tc:'A359',name:'Delta Air Lines',from:'DTW',to:'AMS',alt:39000},
+    {cs:'DAL',tc:'B763',name:'Delta Air Lines',from:'JFK',to:'LAX',alt:36000},
   ],
 ];
 let demoScene=0, demoTimer=null;
@@ -674,6 +714,17 @@ const FONTMAP={
   jost:'var(--f-jost)',poiret:'var(--f-poiret)',josefin:'var(--f-josefin)',
   vibes:'var(--f-vibes)',parisienne:'var(--f-parisienne)',pinyon:'var(--f-pinyon)',
 };
+function setClockScale(k){
+  document.documentElement.style.setProperty('--clockscale',k);
+  document.querySelectorAll('.kpick').forEach(b=>b.classList.toggle('act',b.dataset.k===k));
+  localStorage.setItem('oh_kscale',k);
+}
+function setPClock(q){
+  if(q==='off')document.body.removeAttribute('data-pclock');
+  else document.body.setAttribute('data-pclock',q);
+  document.querySelectorAll('.qpick').forEach(b=>b.classList.toggle('act',b.dataset.q===q));
+  localStorage.setItem('oh_pclock',q);
+}
 function setCase(c){
   if(c==='none')document.body.removeAttribute('data-case');
   else document.body.setAttribute('data-case',c);
@@ -701,10 +752,14 @@ document.querySelectorAll('.tpick').forEach(b=>b.addEventListener('click',()=>se
 document.querySelectorAll('.ppick').forEach(b=>b.addEventListener('click',()=>setPlaneScale(b.dataset.p)));
 // Restore
 document.querySelectorAll('.cpick').forEach(b=>b.addEventListener('click',()=>setCase(b.dataset.c)));
+document.querySelectorAll('.kpick').forEach(b=>b.addEventListener('click',()=>setClockScale(b.dataset.k)));
+document.querySelectorAll('.qpick').forEach(b=>b.addEventListener('click',()=>setPClock(b.dataset.q)));
 if(localStorage.getItem('oh_font'))setFont(localStorage.getItem('oh_font'));
 if(localStorage.getItem('oh_tscale'))setTextScale(localStorage.getItem('oh_tscale'));
 if(localStorage.getItem('oh_pscale'))setPlaneScale(localStorage.getItem('oh_pscale'));
 if(localStorage.getItem('oh_case'))setCase(localStorage.getItem('oh_case'));
+if(localStorage.getItem('oh_kscale'))setClockScale(localStorage.getItem('oh_kscale'));
+if(localStorage.getItem('oh_pclock'))setPClock(localStorage.getItem('oh_pclock'));
 
 
 
