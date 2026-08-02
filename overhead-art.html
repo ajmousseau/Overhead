@@ -546,11 +546,11 @@ select.ge-in option{background:#14161A;color:#fff;font-size:15px;}
 
 <script>
 'use strict';
-const APP_VERSION='1.4.1';   // bump on every push
+const APP_VERSION='1.4.2';   // bump on every push
 const AIRLABS='7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
 const RADII=[10,25,50,100];
 
-const HAS_LIVERY=new Set(["AAL", "AAR", "AAV", "AAY", "ABX", "ACA", "AFR", "AIC", "AIQ", "AIZ", "AJT", "ALK", "ANA", "ANZ", "APC", "APG", "ARN", "ASA", "ATN", "ATW", "AUA", "AVN", "AXB", "AXM", "AZA", "BAV", "BAW", "BCI", "BEL", "BIK", "BKP", "BOE", "BTI", "CAI", "CAL", "CCA", "CEB", "CES", "CFG", "CPA", "CPZ", "CRK", "CSN", "CTN", "CXA", "DAE", "DAL", "DAN", "DHL", "DLH", "EAL", "EIN", "EJT", "ELY", "ENY", "ETD", "ETH", "EVA", "EWG", "EWR", "EZY", "FDX", "FFT", "FIN", "FJI", "FNY", "GAP", "GEC", "GFA", "GIA", "GJS", "GOT", "GPH", "GWI", "GXA", "HAL", "HDA", "HKE", "HNA", "HVN", "IBE", "IBS", "ICE", "IGO", "IRM", "ITY", "JAA", "JAL", "JAS", "JBU", "JIN", "JSA", "JST", "KAC", "KAL", "KLM", "KQA", "KZR", "LAO", "LDA", "LGL", "LNI", "LOT", "LZB", "MAC", "MAL", "MAS", "MGL", "MNA", "MNB", "MON", "MPH", "MSR", "MXD", "MXY", "MYS", "NAF", "NCA", "NGA", "NHA", "NIU", "NKS", "NOK", "NOZ", "NRS", "NXS", "OAL", "OKA", "OMA", "ONG", "OPT", "PAC", "PAL", "PDT", "PGT", "PIA", "PKC", "PKX", "PLI", "PVG", "QFA", "QNZ", "QTR", "RAM", "REU", "RGN", "RKH", "ROT", "RPA", "RSH", "RYR", "SAA", "SAS", "SAT", "SBI", "SBY", "SEY", "SHQ", "SIA", "SJM", "SKJ", "SKW", "SLG", "SOO", "SQC", "SSB", "SVA", "SWA", "SWD", "TAI", "TAJ", "TAM", "TAP", "TAX", "THA", "THY", "TIG", "TOM", "TOW", "TRA", "TSC", "TUI", "TVF", "TVJ", "TYA", "UAE", "UAL", "UBD", "UCT", "UIA", "UKL", "UPS", "UZB", "VAN", "VIM", "VJC", "VLG", "VNA", "VNL", "VOE", "VOZ", "VRD", "VRG", "VUN", "WEN", "WJA", "WN", "WOA", "WZZ", "XAX", "YZR", "ZCH", "ZMB", "MMD", "CFE", "VIR", "EDV", "AMX", "ARG"]);
+const HAS_LIVERY=new Set(["AAL", "AAR", "AAV", "AAY", "ABX", "ACA", "AFR", "AIC", "AIQ", "AIZ", "AJT", "ALK", "ANA", "ANZ", "APC", "APG", "ARN", "ASA", "ATN", "ATW", "AUA", "AVN", "AXB", "AXM", "AZA", "BAV", "BAW", "BCI", "BEL", "BIK", "BKP", "BOE", "BTI", "CAI", "CAL", "CCA", "CEB", "CES", "CFG", "CPA", "CPZ", "CRK", "CSN", "CTN", "CXA", "DAE", "DAL", "DAN", "DHL", "DLH", "EAL", "EIN", "EJT", "ELY", "ENY", "ETD", "ETH", "EVA", "EWG", "EWR", "EZY", "FDX", "FFT", "FIN", "FJI", "FNY", "GAP", "GEC", "GFA", "GIA", "GJS", "GOT", "GPH", "GWI", "GXA", "HAL", "HDA", "HKE", "HNA", "HVN", "IBE", "IBS", "ICE", "IGO", "IRM", "ITY", "JAA", "JAL", "JAS", "JBU", "JIN", "JSA", "JST", "KAC", "KAL", "KLM", "KQA", "KZR", "LAO", "LDA", "LGL", "LNI", "LOT", "LZB", "MAC", "MAL", "MAS", "MGL", "MNA", "MNB", "MON", "MPH", "MSR", "MXD", "MXY", "MYS", "NAF", "NCA", "NGA", "NHA", "NIU", "NKS", "NOK", "NOZ", "NRS", "NXS", "OAL", "OKA", "OMA", "ONG", "OPT", "PAC", "PAL", "PDT", "PGT", "PIA", "PKC", "PKX", "PLI", "PVG", "QFA", "QNZ", "QTR", "RAM", "REU", "RGN", "RKH", "ROT", "RPA", "RSH", "RYR", "SAA", "SAS", "SAT", "SBI", "SBY", "SEY", "SHQ", "SIA", "SJM", "SKJ", "SKW", "SLG", "SOO", "SQC", "SSB", "SVA", "SWA", "SWD", "TAI", "TAJ", "TAM", "TAP", "TAX", "THA", "THY", "TIG", "TOM", "TOW", "TRA", "TSC", "TUI", "TVF", "TVJ", "TYA", "UAE", "UAL", "UBD", "UCT", "UIA", "UKL", "UPS", "UZB", "VAN", "VIM", "VJC", "VLG", "VNA", "VNL", "VOE", "VOZ", "VRD", "VRG", "VUN", "WEN", "WJA", "WN", "WOA", "WZZ", "XAX", "YZR", "ZCH", "ZMB", "MMD", "CFE", "VIR", "EDV", "AMX", "ARG", "TLM", "TGW", "SWR", "JNA", "JJA", "MMA", "KHV", "BBC", "RNA", "CLX", "AFL"]);
 
 const TMAP={
 B731:'737',B732:'737',B733:'737',B734:'737',B735:'737',B736:'737',
@@ -609,7 +609,7 @@ DLH:'Lufthansa',BAW:'British Airways',AFR:'Air France',KLM:'KLM',IBE:'Iberia',
 EZY:'easyJet',RYR:'Ryanair',SAS:'Scandinavian Airlines',FIN:'Finnair',
 THY:'Turkish Airlines',UAE:'Emirates',QTR:'Qatar Airways',ETD:'Etihad Airways',
 SIA:'Singapore Airlines',CPA:'Cathay Pacific',QFA:'Qantas',ANZ:'Air New Zealand',
-KAL:'Korean Air',JAL:'Japan Airlines',ANA:'All Nippon Airways',FDX:'FedEx Express',UPS:'UPS Airlines',SVA:'Saudia',MMD:'Air Alsie',CAL:'China Airlines',AMX:'Aeromexico',ARG:'Aerol\u00edneas Argentinas',CFE:'BA CityFlyer',VIR:'Virgin Atlantic',DHL:'DHL Aviation',DAE:'DHL Aviation',NOK:'Nok Air',CFG:'Condor',WZZ:'Wizz Air'};
+KAL:'Korean Air',JAL:'Japan Airlines',ANA:'All Nippon Airways',FDX:'FedEx Express',UPS:'UPS Airlines',SVA:'Saudia',MMD:'Air Alsie',CAL:'China Airlines',AMX:'Aeromexico',ARG:'Aerol\u00edneas Argentinas',TLM:'Thai Lion Air',TGW:'Scoot',SWR:'Swiss',JNA:'Jin Air',JJA:'Jeju Air',MMA:'Myanmar Airways Intl',KHV:'Cambodia Angkor Air',BBC:'Biman Bangladesh',RNA:'Nepal Airlines',CLX:'Cargolux',AFL:'Aeroflot',THA:'Thai Airways',BKP:'Bangkok Airways',CFE:'BA CityFlyer',VIR:'Virgin Atlantic',DHL:'DHL Aviation',DAE:'DHL Aviation',NOK:'Nok Air',CFG:'Condor',WZZ:'Wizz Air'};
 
 const DEMO_SCENES=[
   [ // Scene 1 — Queens of the Sky
@@ -656,6 +656,11 @@ const DEMO_SCENES=[
     {cs:'ACA',tc:'B763',name:'Air Canada',from:'YYZ',to:'YVR',alt:37000},
     {cs:'AMX',tc:'B738',name:'Aeromexico',from:'MEX',to:'ORD',alt:35000},
     {cs:'ARG',tc:'B744',name:'Aerol\u00edneas Argentinas',from:'EZE',to:'MAD',alt:38000},
+  ],
+  [ // Scene 10 — Bangkok
+    {cs:'THA',tc:'A359',name:'Thai Airways',from:'BKK',to:'LHR',alt:40000},
+    {cs:'BKP',tc:'A319',name:'Bangkok Airways',from:'BKK',to:'USM',alt:24000},
+    {cs:'TGW',tc:'B788',name:'Scoot',from:'SIN',to:'DMK',alt:37000},
   ],
 ];
 let demoScene=0, demoTimer=null;
@@ -1008,7 +1013,7 @@ const TYPE_LIST=[['388','A380-800'],['380','A380'],['744','747-400'],['747','747
 ['CR7','CRJ-700'],['CR9','CRJ-900'],['AT7','ATR 72'],['DH8','Dash 8'],['A38','A380 alt'],
 ['767','767'],['777','777'],['77L','777LR']];
 const BUILTIN_NAMES=['Queens of the Sky','Workhorses','World Tour','Off the Beaten Path',
-'SkyTeam','USA Budget','Europe Budget','Delta Fleet','The Americas'];
+'SkyTeam','USA Budget','Europe Budget','Delta Fleet','The Americas','Bangkok'];
 const HUBS={DAL:'ATL',UAL:'ORD',AAL:'DFW',SWA:'MDW',JBU:'JFK',NKS:'FLL',FFT:'DEN',AAY:'LAS',
 ASA:'SEA',HAL:'HNL',ACA:'YYZ',WJA:'YYC',UAE:'DXB',QTR:'DOH',ETD:'AUH',SIA:'SIN',CPA:'HKG',
 KAL:'ICN',JAL:'HND',ANA:'HND',DLH:'FRA',BAW:'LHR',AFR:'CDG',KLM:'AMS',IBE:'MAD',THY:'IST',
