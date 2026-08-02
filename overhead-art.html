@@ -70,6 +70,7 @@ body{font-family:Georgia,'Times New Roman',serif;}
   flex:1;display:flex;flex-direction:column;
   justify-content:center;min-height:0;overflow:visible;
   position:relative;
+  transition:opacity .35s ease;
 }
 
 /* Plane image — centered, dominant */
@@ -222,7 +223,7 @@ MKE:'Milwaukee',MSY:'New Orleans',OMA:'Omaha',PIT:'Pittsburgh',RDU:'Raleigh',
 RSW:'Fort Myers',SAN:'San Diego',SAT:'San Antonio',STL:'St Louis',TPA:'Tampa',
 TVC:'Traverse City',LAS:'Las Vegas',PDX:'Portland',FLL:'Fort Lauderdale',BUF:'Buffalo',
 YYZ:'Toronto',YUL:'Montreal',LHR:'London',CDG:'Paris',FRA:'Frankfurt',AMS:'Amsterdam',
-DXB:'Dubai',NRT:'Tokyo',SIN:'Singapore',ICN:'Seoul',HKG:'Hong Kong',SYD:'Sydney'};
+DXB:'Dubai',NRT:'Tokyo',SIN:'Singapore',ICN:'Seoul',HKG:'Hong Kong',SYD:'Sydney',JED:'Jeddah',SDF:'Louisville',ANC:'Anchorage',MEM:'Memphis'};
 
 const FTYPES={B738:'Boeing 737-800',B739:'Boeing 737-900',B37M:'Boeing 737 MAX 7',
 B38M:'Boeing 737 MAX 8',B39M:'Boeing 737 MAX 9',A319:'Airbus A319',A320:'Airbus A320',
@@ -232,7 +233,7 @@ B788:'Boeing 787-8',B789:'Boeing 787-9',B78X:'Boeing 787-10',B744:'Boeing 747-40
 A332:'Airbus A330-200',A333:'Airbus A330-300',A359:'Airbus A350-900',A35K:'Airbus A350-1000',
 A380:'Airbus A380',A388:'Airbus A380-800',E175:'Embraer E175',E75L:'Embraer E175',
 E190:'Embraer E190',CRJ7:'CRJ-700',CRJ9:'CRJ-900',
-B712:'Boeing 717',BCS1:'Airbus A220-100',BCS3:'Airbus A220-300'};
+B712:'Boeing 717',BCS1:'Airbus A220-100',BCS3:'Airbus A220-300','77W':'Boeing 777F','744':'Boeing 747-400F'};
 
 const ALNAMES={DAL:'Delta Air Lines',UAL:'United Airlines',AAL:'American Airlines',
 SWA:'Southwest Airlines',AAY:'Allegiant Air',NKS:'Spirit Airlines',ASA:'Alaska Airlines',
@@ -242,13 +243,26 @@ DLH:'Lufthansa',BAW:'British Airways',AFR:'Air France',KLM:'KLM',IBE:'Iberia',
 EZY:'easyJet',RYR:'Ryanair',SAS:'Scandinavian Airlines',FIN:'Finnair',
 THY:'Turkish Airlines',UAE:'Emirates',QTR:'Qatar Airways',ETD:'Etihad Airways',
 SIA:'Singapore Airlines',CPA:'Cathay Pacific',QFA:'Qantas',ANZ:'Air New Zealand',
-KAL:'Korean Air',JAL:'Japan Airlines',ANA:'All Nippon Airways'};
+KAL:'Korean Air',JAL:'Japan Airlines',ANA:'All Nippon Airways',FDX:'FedEx Express',UPS:'UPS Airlines',SVA:'Saudia'};
 
-const DEMO=[
-  {cs:'AFR',tc:'B744',name:'Air France',from:'CDG',to:'JFK',alt:37000},
-  {cs:'DAL',tc:'A359',name:'Delta Air Lines',from:'DTW',to:'AMS',alt:39000},
-  {cs:'UAE',tc:'A388',name:'Emirates',from:'DXB',to:'ORD',alt:40000},
+const DEMO_SCENES=[
+  [ // Scene 1 — Queens of the Sky
+    {cs:'KAL',tc:'B744',name:'Korean Air',from:'ICN',to:'JFK',alt:38000},
+    {cs:'DAL',tc:'A359',name:'Delta Air Lines',from:'DTW',to:'AMS',alt:39000},
+    {cs:'UAE',tc:'A388',name:'Emirates',from:'DXB',to:'ORD',alt:40000},
+  ],
+  [ // Scene 2 — Workhorses
+    {cs:'AFR',tc:'B789',name:'Air France',from:'CDG',to:'DTW',alt:37000},
+    {cs:'FDX',tc:'77W', name:'FedEx Express',from:'MEM',to:'ANC',alt:35000},
+    {cs:'UPS',tc:'744', name:'UPS Airlines',from:'SDF',to:'HKG',alt:36000},
+  ],
+  [ // Scene 3 — World Tour
+    {cs:'SVA',tc:'B77W',name:'Saudia',from:'JED',to:'LHR',alt:40000},
+    {cs:'FFT',tc:'A21N',name:'Frontier Airlines',from:'DEN',to:'MCO',alt:34000},
+    {cs:'SIA',tc:'A359',name:'Singapore Airlines',from:'SIN',to:'JFK',alt:41000},
+  ],
 ];
+let demoScene=0, demoTimer=null;
 
 function alOf(cs){return(cs||'').replace(/\d.*$/,'').toUpperCase();}
 function fmtDate(){
@@ -349,12 +363,16 @@ function slotHTML(src,cap){
 }
 
 function renderDemo(){
-  DEMO.forEach((p,i)=>{
-    const t=TMAP[p.tc]||'320';
+  const scene=DEMO_SCENES[demoScene];
+  scene.forEach((p,i)=>{
+    // tc may be an ADS-B code (B744) or a direct file code (744, 77W)
+    const t=TMAP[p.tc]||p.tc;
     const src=`/liveries/${p.cs}_${t}.webp`;
     const route=(AP[p.from]||p.from)+' &ndash; '+(AP[p.to]||p.to);
     const cap=capLine(p.name,FTYPES[p.tc]||'',route,p.alt,'');
-    document.getElementById('s'+i).innerHTML=slotHTML(src,cap);
+    const slot=document.getElementById('s'+i);
+    slot.style.opacity='0';
+    setTimeout(()=>{slot.innerHTML=slotHTML(src,cap);slot.style.opacity='1';},350);
   });
   document.getElementById('colophon').innerHTML=
     `<span class="rule"></span><span class="num">&#8470; ${posterNum}</span>&ensp;&mdash;&ensp;Received ${fmtDate()}, three aircraft in composition<span class="rule"></span>`;
@@ -406,7 +424,18 @@ if(st){document.body.setAttribute('data-theme',st);
 function toggleDemo(){
   demoMode=!demoMode;
   document.getElementById('demobtn').classList.toggle('on',demoMode);
-  demoMode?renderDemo():render(last);}
+  if(demoMode){
+    demoScene=0;
+    renderDemo();
+    demoTimer=setInterval(()=>{
+      demoScene=(demoScene+1)%DEMO_SCENES.length;
+      renderDemo();
+    },30000);
+  }else{
+    clearInterval(demoTimer);demoTimer=null;
+    render(last);
+  }
+}
 
 // -- Location --
 function showZip(){
