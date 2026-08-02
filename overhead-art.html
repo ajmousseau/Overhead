@@ -663,10 +663,11 @@ const PINNED={
   GJS:{src:'/liveries/GJS_CR7.webp',scale:0.6},
   VIR:{src:'/liveries/VIR_744.webp',scale:0.65},
   ENY:{src:'/liveries/ENY_CR7.webp',scale:1},
+  EDV:{src:'/liveries/DLC_CR7.webp',scale:1},
+  SKW:{src:'/liveries/DLC_CR7.webp',scale:1},
+  RPA:{src:'/liveries/DLC_CR7.webp',scale:1},
 };
-// Airline aliases — flights from key use files from value
-// (all SkyWest flights render the Endeavor livery)
-const AL_ALIAS={SKW:'EDV'};
+const AL_ALIAS={};
 
 function livSrc(icao,tc){
   if(PINNED[icao])return PINNED[icao].src;
@@ -984,6 +985,30 @@ function initLoc(){
 
 setInterval(fetchFlights,30000);
 initLoc();
+
+// -- URL params: per-instance control for multi-monitor setups --
+// ?mode=demo  -> auto-start demo rotation
+// ?dim=off    -> disable night dimming on this instance
+(function(){
+  const q=new URLSearchParams(location.search);
+  if(q.get('mode')==='demo'&&!demoMode)toggleDemo();
+})();
+
+// -- Night dimming: 9pm-7am ease to 20% brightness --
+(function(){
+  const q=new URLSearchParams(location.search);
+  if(q.get('dim')==='off')return;
+  const dimEl=document.createElement('div');
+  dimEl.style.cssText='position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:1500;transition:opacity 60s linear;';
+  document.body.appendChild(dimEl);
+  function applyDim(){
+    const h=new Date().getHours();
+    const night=(h>=21||h<7);
+    dimEl.style.opacity=night?'0.8':'0';   // 80% black overlay = 20% brightness
+  }
+  applyDim();
+  setInterval(applyDim,60000);
+})();
 
 // -- Open a flight in FR24: Android intent -> app directly, web fallback --
 function openFR24(cs){
