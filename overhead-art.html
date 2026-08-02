@@ -203,6 +203,7 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
     letter-spacing:.14em;
     color:var(--fg2);
   }
+  #colophon .colo-sub span{display:inline;}
 }
 
 /* Portrait/base: signature only (clock off) */
@@ -227,9 +228,13 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
     font-style:italic;
     font-size:calc(clamp(9px,2.2vw,14px) * var(--clockscale));
     letter-spacing:.14em;color:var(--fg2);
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    line-height:1.6;
   }
+  /* hide the inline separator; date and place become stacked lines */
+  body[data-pclock] #colophon .colo-sub .csep{display:none;}
   /* Position: top puts the colophon before the planes */
-  body[data-pclock="top"] #colophon{order:-1;padding-bottom:0;}
+  body[data-pclock="top"] #colophon{order:-1;padding-bottom:0;padding-top:clamp(2px,0.6vh,8px);}
   body[data-pclock="bottom"] #colophon{padding-top:0;}
 
   /* In clock mode, center planes within slots so whitespace distributes
@@ -389,6 +394,7 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
     <div class="pal-divider"></div>
     <div class="pal-toggles">
       <button class="ptog" id="demobtn" onclick="toggleDemo()">Demo</button>
+      <button class="ptog" onclick="hardRefresh()">Refresh</button>
     </div>
   </div>
 
@@ -551,7 +557,7 @@ function updateColophon(n){
   document.getElementById('colophon').innerHTML=
     // Landscape placard structure
     `<div class="colo-clock">${fmtTime()}</div>`+
-    `<div class="colo-sub">${fmtDate()}${place?' &nbsp;&middot;&nbsp; '+place:''}</div>`+
+    `<div class="colo-sub"><span>${fmtDate()}</span>${place?'<span class="csep">&nbsp;&middot;&nbsp;</span><span>'+place+'</span>':''}</div>`+
     // Portrait signature sentence
     `<div class="colo-sig"><span class="rule"></span><span class="num">&#8470; ${posterNum}</span>&ensp;&mdash;&ensp;Received ${fmtDate()} at ${fmtTime()}${over}, ${cnt}<span class="rule"></span></div>`;
 }
@@ -713,6 +719,12 @@ function render(ac){
 }
 
 // -- Controls --
+function hardRefresh(){
+  // Cache-busting reload — pulls the latest deployed version
+  const u=new URL(window.location.href);
+  u.searchParams.set('r',Date.now());
+  window.location.replace(u.toString());
+}
 function togglePalette(){document.getElementById('palette').classList.toggle('show');}
 document.addEventListener('click',e=>{
   const p=document.getElementById('palette');
@@ -836,9 +848,15 @@ function initLoc(){
         fetchT(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${uLat}&longitude=${uLon}&localityLanguage=en`,7000)
           .then(r=>r.ok?r.json():null)
           .then(g=>{if(g){
-            if(g.city||g.locality)localStorage.setItem('oh_city',g.city||g.locality);
+            let name=g.city||g.locality||'';
+            // Prefer a real locality over administrative units like "Township of Byron"
+            if(/township|charter|city of|village of/i.test(name)&&g.locality&&!/township|charter/i.test(g.locality))name=g.locality;
+            name=name.replace(/^(charter\s+)?township\s+of\s+/i,'')
+                     .replace(/^(city|village|town)\s+of\s+/i,'')
+                     .replace(/\s+(charter\s+)?township$/i,'');
+            if(name)localStorage.setItem('oh_city',name);
             if(g.principalSubdivisionCode)localStorage.setItem('oh_state',(g.principalSubdivisionCode.split('-')[1])||'');
-            render(last);
+            updateColophon(lastCount);
           }}).catch(()=>{});
         fetchFlights();},
       ()=>{if(!uLat){const z=localStorage.getItem('oh_zip');if(z)resolveZip(z);else showZip();}},
