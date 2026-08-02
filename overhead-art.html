@@ -546,7 +546,7 @@ select.ge-in option{background:#14161A;color:#fff;font-size:15px;}
 
 <script>
 'use strict';
-const APP_VERSION='1.6.3';   // bump on every push
+const APP_VERSION='1.6.5';   // bump on every push
 const AIRLABS='7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
 const RADII=[10,25,50,100];
 
@@ -889,8 +889,8 @@ function hav(a1,b1,a2,b2){if(!a2||!b2)return Infinity;
   const a=Math.sin(dr/2)**2+Math.cos(a1*Math.PI/180)*Math.cos(a2*Math.PI/180)*Math.sin(dc/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
 
-// -- Route lookups, free-first --
-// 1) adsb.lol routeset (free, unlimited, batch)  2) hexdb.io (free)  3) AirLabs (1k/mo)
+// -- Route lookups: one call to our function (routeset+hexdb server-side),
+//    validated by position; AirLabs only for final stragglers --
 const pendingRoutes=new Set();
 async function lookupRoutesBatch(planes){
   const unknown=planes.filter(p=>{
@@ -899,60 +899,31 @@ async function lookupRoutesBatch(planes){
   });
   if(!unknown.length)return;
   unknown.forEach(p=>pendingRoutes.add(p.flight.trim().toUpperCase()));
-  // Tier 1: adsb.lol routeset — one POST for all
   try{
     const body={planes:unknown.map(p=>({callsign:p.flight.trim().toUpperCase(),lat:p.lat||0,lng:p.lon||0}))};
-    const r=await fetchT('https://api.adsb.lol/api/0/routeset',8000,{
+    const r=await fetchT('/.netlify/functions/routes',9000,{
       method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     if(r.ok){
       const d=await r.json();
-      (Array.isArray(d)?d:[]).forEach(e=>{
-        const cs=(e.callsign||'').toUpperCase();
-        // plausible: routeset checked our position against the route's great circle
-        if(e.plausible===0||e.plausible===false)return;
-        let codes=(e._airport_codes_iata||'').split('-').filter(c=>c&&c!=='unknown');
-        if(codes.length<2)return;
-        let from=codes[0], to=codes[codes.length-1];
-        if(from===to&&codes.length>=3){to=codes[1];}
-        if(from===to)return;
-        const pl=body.planes.find(p=>p.callsign===cs);
-        if(!validRoute(from,to,pl?.lat,pl?.lng))return;
-        RC[cs]={from,to,_t:Date.now()};rcDirty=true;
-        pendingRoutes.delete(cs);
+      const routes=d.routes||{};
+      unknown.forEach(p=>{
+        const cs=p.flight.trim().toUpperCase();
+        const rt=routes[cs];
+        if(rt&&validRoute(rt.from,rt.to,p.lat,p.lon)){
+          RC[cs]={from:rt.from,to:rt.to,_t:Date.now()};rcDirty=true;
+        }
       });
       render(last);
     }
   }catch(e){}
-  // Tier 2+3 for stragglers, one at a time, spaced
+  // Last resort for anything still unknown: AirLabs, spaced
   for(const p of unknown){
     const cs=p.flight.trim().toUpperCase();
-    if(RC[cs]!==undefined&&RC[cs]!==null){pendingRoutes.delete(cs);continue;}
-    await hexdbRoute(cs,p) || await airlabsRoute(cs,p);
+    if(RC[cs]!==undefined){pendingRoutes.delete(cs);continue;}
+    await airlabsRoute(cs,p);
     pendingRoutes.delete(cs);
-    await new Promise(res=>setTimeout(res,1200));
+    await new Promise(res=>setTimeout(res,1500));
   }
-}
-async function hexdbRoute(cs,pl){
-  try{
-    const r=await fetchT(`https://hexdb.io/api/v1/route/icao/${encodeURIComponent(cs)}`,6000);
-    if(r.ok){
-      const d=await r.json();
-      const codes=(d.route||'').split('-').filter(Boolean);
-      const conv=c=>{
-        if(c.length===4&&(c[0]==='K'||c[0]==='C'))return c.slice(1);   // KORD->ORD, CYYZ->YYZ
-        return c;   // other regions keep ICAO; AP lookup may miss but no wrong city
-      };
-      if(codes.length>=2){
-        let f=conv(codes[0]), t=conv(codes[codes.length-1]);
-        if(f===t&&codes.length>=3)t=conv(codes[1]);
-        if(f!==t&&validRoute(f,t,pl?.lat,pl?.lon)){
-          RC[cs]={from:f,to:t,_t:Date.now()};rcDirty=true;render(last);
-          return true;
-        }
-      }
-    }
-  }catch(e){}
-  return false;
 }
 async function airlabsRoute(cs,pl){
   try{
@@ -965,7 +936,7 @@ async function airlabsRoute(cs,pl){
       }
     }
   }catch(e){}
-  RC[cs]=null;   // mark tried this session
+  RC[cs]=null;
   return false;
 }
 
