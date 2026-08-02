@@ -546,7 +546,7 @@ select.ge-in option{background:#14161A;color:#fff;font-size:15px;}
 
 <script>
 'use strict';
-const APP_VERSION='1.6.1';   // bump on every push
+const APP_VERSION='1.6.2';   // bump on every push
 const AIRLABS='7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
 const RADII=[10,25,50,100];
 
@@ -852,14 +852,14 @@ let uLat=null,uLon=null,last=[],demoMode=false,posterNum=Math.floor(Math.random(
 // Route cache — persisted 14 days (saves AirLabs quota across reboots)
 const RC=(function(){
   try{
-    const s=JSON.parse(localStorage.getItem('oh_rc')||'{}');
+    const s=JSON.parse(localStorage.getItem('oh_rc2')||'{}');
     const cut=Date.now()-14*86400000;
     Object.keys(s).forEach(k=>{if(!s[k]||!s[k]._t||s[k]._t<cut)delete s[k];});
     return s;
   }catch(e){return{};}
 })();
 let rcDirty=false;
-setInterval(()=>{if(rcDirty){try{localStorage.setItem('oh_rc',JSON.stringify(RC));}catch(e){}rcDirty=false;}},20000);
+setInterval(()=>{if(rcDirty){try{localStorage.setItem('oh_rc2',JSON.stringify(RC));}catch(e){}rcDirty=false;}},20000);
 let rQ=Promise.resolve();
 
 function fetchT(u,ms,opts){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||9000);
@@ -888,11 +888,16 @@ async function lookupRoutesBatch(planes){
       const d=await r.json();
       (Array.isArray(d)?d:[]).forEach(e=>{
         const cs=(e.callsign||'').toUpperCase();
-        const codes=(e._airport_codes_iata||'').split('-').filter(c=>c&&c!=='unknown');
-        if(codes.length>=2){
-          RC[cs]={from:codes[0],to:codes[codes.length-1],_t:Date.now()};rcDirty=true;
-          pendingRoutes.delete(cs);
-        }
+        // plausible: routeset checked our position against the route's great circle
+        if(e.plausible===0||e.plausible===false)return;
+        let codes=(e._airport_codes_iata||'').split('-').filter(c=>c&&c!=='unknown');
+        if(codes.length<2)return;
+        let from=codes[0], to=codes[codes.length-1];
+        // out-and-back multi-leg (ORD-GRR-ORD): use the first leg instead
+        if(from===to&&codes.length>=3){to=codes[1];}
+        if(from===to)return;
+        RC[cs]={from,to,_t:Date.now()};rcDirty=true;
+        pendingRoutes.delete(cs);
       });
       render(last);
     }
@@ -912,12 +917,17 @@ async function hexdbRoute(cs){
     if(r.ok){
       const d=await r.json();
       const codes=(d.route||'').split('-').filter(Boolean);
+      const conv=c=>{
+        if(c.length===4&&(c[0]==='K'||c[0]==='C'))return c.slice(1);   // KORD->ORD, CYYZ->YYZ
+        return c;   // other regions keep ICAO; AP lookup may miss but no wrong city
+      };
       if(codes.length>=2){
-        // hexdb returns ICAO airport codes (KGRR); convert to IATA-ish by stripping K/C prefix heuristics is unsafe — use as-is if 3 letters
-        const f=codes[0].length===4?codes[0].slice(1):codes[0];
-        const t=codes[codes.length-1].length===4?codes[codes.length-1].slice(1):codes[codes.length-1];
-        RC[cs]={from:f,to:t,_t:Date.now()};rcDirty=true;render(last);
-        return true;
+        let f=conv(codes[0]), t=conv(codes[codes.length-1]);
+        if(f===t&&codes.length>=3)t=conv(codes[1]);
+        if(f!==t){
+          RC[cs]={from:f,to:t,_t:Date.now()};rcDirty=true;render(last);
+          return true;
+        }
       }
     }
   }catch(e){}
