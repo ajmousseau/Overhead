@@ -336,6 +336,40 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
 .lv-row{font-size:11px;letter-spacing:.12em;color:rgba(255,255,255,.75);line-height:2;}
 .lv-sec{font-size:8px;letter-spacing:.35em;text-transform:uppercase;color:rgba(255,255,255,.35);margin:16px 0 6px;}
 
+#welcome{display:none;position:fixed;inset:0;background:rgba(4,6,9,.97);z-index:2100;
+  align-items:center;justify-content:center;font-family:Georgia,serif;overflow-y:auto;}
+#welcome.show{display:flex;}
+.wc-inner{max-width:440px;padding:40px 30px;text-align:center;}
+.wc-mast{font-size:22px;opacity:.5;color:#F5EDDF;}
+.wc-title{font-size:16px;letter-spacing:.5em;text-transform:uppercase;color:#F5EDDF;margin:12px 0 6px;}
+.wc-tag{font-style:italic;font-size:12px;letter-spacing:.08em;color:rgba(245,237,223,.55);margin-bottom:26px;}
+.wc-rows{text-align:left;}
+.wc-row{font-size:11.5px;line-height:1.75;letter-spacing:.04em;color:rgba(245,237,223,.75);
+  margin-bottom:14px;padding-left:2px;}
+.wc-k{display:block;font-size:7.5px;letter-spacing:.35em;text-transform:uppercase;
+  color:rgba(245,237,223,.4);margin-bottom:2px;}
+.wc-go{margin-top:14px;font-size:9px;padding:11px 30px;letter-spacing:.4em;}
+
+#galed{display:none;position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:1950;overflow-y:auto;font-family:Georgia,serif;}
+#galed.show{display:block;}
+.ge-inner{max-width:560px;margin:0 auto;padding:38px 24px 60px;text-align:center;}
+.ge-row{display:flex;gap:8px;align-items:center;justify-content:center;margin:6px 0;flex-wrap:wrap;}
+.ge-in{background:transparent;border:1px solid rgba(255,255,255,.18);color:#fff;
+  font-family:Georgia,serif;font-size:12px;letter-spacing:.06em;padding:8px 10px;outline:none;border-radius:2px;}
+.ge-in::placeholder{color:rgba(255,255,255,.25);}
+.ge-wide{width:100%;max-width:340px;text-align:center;letter-spacing:.2em;margin-bottom:14px;}
+.ge-plane{border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:14px 12px 12px;margin:12px 0;}
+.ge-plane img{height:52px;max-width:90%;object-fit:contain;margin:6px auto 2px;display:block;opacity:.95;}
+.ge-plane .ge-noimg{font-size:8px;letter-spacing:.3em;color:rgba(255,255,255,.2);padding:18px 0;}
+.ge-lbl{font-size:7px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.35);display:block;margin:8px 0 3px;}
+.ge-sugg{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:5px;}
+.ge-sugg .ptog{font-size:7px;padding:4px 8px;letter-spacing:.1em;text-transform:none;}
+.ge-item{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.08);padding:10px 4px;color:rgba(255,255,255,.8);
+  font-size:12px;letter-spacing:.1em;}
+.ge-item .ptog{font-size:7px;padding:4px 9px;}
+.ge-btnrow{display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap;}
+
 #zo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:2000;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:Georgia,serif;}
 #zo.show{display:flex;}
 .zt{font-size:9px;letter-spacing:.45em;color:rgba(255,255,255,.5);text-transform:uppercase;}
@@ -411,11 +445,12 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
     </div>
     <div class="pal-divider"></div>
     <div class="pal-toggles">
-      <button class="ptog" id="demobtn" onclick="toggleDemo()">Demo</button>
+      <button class="ptog" id="demobtn" onclick="toggleDemo()">Gallery</button>
+      <button class="ptog" onclick="openGalEd()">Edit</button>
       <button class="ptog" onclick="hardRefresh()">Refresh</button>
       <button class="ptog" onclick="exitApp()">Exit</button>
     </div>
-    <div id="pal-ver"></div>
+    <div id="pal-ver" onclick="showWelcome()" style="cursor:pointer;" title="Guide"></div>
   </div>
 
 
@@ -437,6 +472,46 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
   </div>
 </div>
 
+<div id="welcome">
+  <div class="wc-inner">
+    <div class="wc-mast">&#9992;</div>
+    <div class="wc-title">Overhead</div>
+    <div class="wc-tag">The sky above you, as a living poster.</div>
+    <div class="wc-rows">
+      <div class="wc-row"><span class="wc-k">The display</span>
+        The three nearest aircraft, drawn in their liveries, refreshed as they pass.</div>
+      <div class="wc-row"><span class="wc-k">The dot</span>
+        Tap the faint dot in the top corner for colors, type, sizes, and Gallery mode.
+        Hold it for your flight log.</div>
+      <div class="wc-row"><span class="wc-k">The planes</span>
+        Press and hold any aircraft for a second to follow it in Flightradar24.</div>
+      <div class="wc-row"><span class="wc-k">Gallery</span>
+        A curated rotation of the world's great liveries &mdash; build your own in Edit.</div>
+    </div>
+    <button class="ptog wc-go" onclick="dismissWelcome()">Begin</button>
+  </div>
+</div>
+
+<div id="galed">
+  <div class="ge-inner">
+    <div class="lv-title">Gallery Editor</div>
+    <div id="ge-list"></div>
+    <div id="ge-form" style="display:none;">
+      <input id="ge-name" class="ge-in ge-wide" placeholder="Gallery name"/>
+      <div id="ge-planes"></div>
+      <div class="ge-btnrow">
+        <button class="ptog" onclick="saveGalScene()">Save</button>
+        <button class="ptog" onclick="showGalList()">Cancel</button>
+      </div>
+    </div>
+    <div class="ge-btnrow" id="ge-mainbtns">
+      <button class="ptog" onclick="newGalScene()">New Gallery</button>
+      <button class="ptog" id="ge-builtin" onclick="toggleBuiltin()">Built-ins: On</button>
+      <button class="ptog" onclick="document.getElementById('galed').classList.remove('show')">Close</button>
+    </div>
+  </div>
+</div>
+
 <div id="zo">
   <div class="zt">Overhead</div>
   <div style="font-size:9px;letter-spacing:.3em;color:rgba(255,255,255,.65);">ENTER YOUR ZIP CODE</div>
@@ -447,7 +522,7 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
 
 <script>
 'use strict';
-const APP_VERSION='1.2.2';   // bump on every push
+const APP_VERSION='1.3.1';   // bump on every push
 const AIRLABS='7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
 const RADII=[10,25,50,100];
 
@@ -561,6 +636,15 @@ const DEMO_SCENES=[
 ];
 let demoScene=0, demoTimer=null;
 
+// -- Custom galleries (built in the in-app editor, stored locally) --
+function loadScenes(){try{return JSON.parse(localStorage.getItem('oh_scenes')||'[]');}catch(e){return[];}}
+function saveScenes(s){localStorage.setItem('oh_scenes',JSON.stringify(s));}
+function allScenes(){
+  const useBuiltin=localStorage.getItem('oh_builtin')!=='0';
+  const custom=loadScenes().map(s=>s.planes);
+  return (useBuiltin?DEMO_SCENES:[]).concat(custom.length?custom:[]);
+}
+
 // Heavy hitters — the rotating 4th plane in ?mode=demo4
 const HEAVIES=[
   {cs:'KAL',tc:'B744',name:'Korean Air',from:'ICN',to:'JFK',alt:38000},
@@ -573,7 +657,7 @@ const HEAVIES=[
   {cs:'DLH',tc:'B744',name:'Lufthansa',from:'FRA',to:'ORD',alt:38000},
   {cs:'CAL',tc:'B744',name:'China Airlines',from:'TPE',to:'LAX',alt:38000},
 ];
-const FOURMODE=new URLSearchParams(location.search).get('mode')==='demo4';
+const _fm=new URLSearchParams(location.search).get('mode');const FOURMODE=(_fm==='demo4'||_fm==='gallery4');
 if(FOURMODE)document.body.classList.add('fourdemo');
 
 function alOf(cs){return(cs||'').replace(/\d.*$/,'').toUpperCase();}
@@ -606,13 +690,16 @@ function logFlights(ac){
   ac.forEach(a=>{
     const cs=a.flight.trim().toUpperCase();
     const key=cs+'_'+today;   // one entry per flight per day
+    const rt=RC[cs];          // route may resolve after first sighting
     const prev=log[key];
     if(!prev){
       log[key]={cs,al:alOf(cs),t:(a.t||'').toUpperCase(),d:+a._d.toFixed(1),
-                r:a._r||0,dt:today};
+                r:a._r||0,dt:today,
+                fr:rt?.from||'',to:rt?.to||''};
       changed=true;
-    }else if(a._d<prev.d){
-      prev.d=+a._d.toFixed(1);changed=true;   // track closest approach
+    }else{
+      if(a._d<prev.d){prev.d=+a._d.toFixed(1);changed=true;}
+      if(rt&&!prev.fr){prev.fr=rt.from;prev.to=rt.to;changed=true;}  // backfill route
     }
   });
   if(changed)saveLog(log);
@@ -748,7 +835,9 @@ async function fetchFlights(){
       best=(d.ac||[]).filter(a=>{
         if(!a.flight)return false;
         const cs=a.flight.trim().toUpperCase();
-        if(!/^[A-Z]{2,3}\d/.test(cs)||/^N\d/.test(cs))return false;
+        // strict: whole callsign must be alphanumeric (blocks injection via spoofed ADS-B)
+        if(!/^[A-Z]{2,3}\d[A-Z0-9]*$/.test(cs)||/^N\d/.test(cs))return false;
+        a.flight=cs;   // use the validated form everywhere downstream
         return livSrc(alOf(cs),(a.t||'').toUpperCase())!==null;
       }).map(a=>({...a,_d:hav(uLat,uLon,a.lat,a.lon),_r:rareScore(a)}))
         .filter(a=>isFinite(a._d)).sort((a,b)=>a._d-b._d).slice(0,6);
@@ -806,7 +895,7 @@ function slotHTML(src,cap,scale){
 }
 
 function renderDemo(){
-  const scene=DEMO_SCENES[demoScene];
+  const scenes=allScenes();const scene=scenes[demoScene%scenes.length]||DEMO_SCENES[0];
   scene.forEach((p,i)=>{
     // Pinned airlines use custom file + scale, same as live mode
     let src, scale;
@@ -873,6 +962,147 @@ function hardRefresh(){
   u.searchParams.set('r',Date.now());
   window.location.replace(u.toString());
 }
+// --- Gallery Editor ---
+const TYPE_LIST=[['388','A380-800'],['380','A380'],['744','747-400'],['747','747-8'],
+['77W','777-300ER'],['772','777-200'],['773','777-300'],['77L','777-200LR'],
+['787','787-10'],['788','787-8'],['789','787-9'],
+['359','A350-900'],['332','A330-200'],['333','A330-300'],['338','A330-800'],['339','A330-900'],
+['763','767-300'],['762','767-200'],['764','767-400'],['752','757-200'],['753','757-300'],['757','757'],
+['737','737-700'],['738','737-800'],['739','737-900'],['73H','737-800W'],
+['319','A319'],['320','A320'],['321','A321'],
+['E70','E170'],['E75','E175'],['E90','E190'],['E95','E195'],
+['CR7','CRJ-700'],['CR9','CRJ-900'],['AT7','ATR 72'],['DH8','Dash 8'],['A38','A380 alt'],
+['767','767'],['777','777'],['77L','777LR']];
+const HUBS={DAL:'ATL',UAL:'ORD',AAL:'DFW',SWA:'MDW',JBU:'JFK',NKS:'FLL',FFT:'DEN',AAY:'LAS',
+ASA:'SEA',HAL:'HNL',ACA:'YYZ',WJA:'YYC',UAE:'DXB',QTR:'DOH',ETD:'AUH',SIA:'SIN',CPA:'HKG',
+KAL:'ICN',JAL:'HND',ANA:'HND',DLH:'FRA',BAW:'LHR',AFR:'CDG',KLM:'AMS',IBE:'MAD',THY:'IST',
+QFA:'SYD',ANZ:'AKL',SAS:'CPH',FIN:'HEL',EIN:'DUB',TAP:'LIS',SVA:'JED',MSR:'CAI',ETH:'ADD',
+AMX:'MEX',ARG:'EZE',CAL:'TPE',EVA:'TPE',CCA:'PEK',CES:'PVG',CSN:'CAN',AIC:'DEL',THA:'BKK',
+FDX:'MEM',UPS:'SDF',DHL:'CVG',EZY:'LGW',RYR:'STN',WZZ:'BUD',VLG:'BCN',CFG:'FRA',VIR:'LHR'};
+const DEST_POOL=['JFK','LAX','ORD','ATL','MIA','SEA','DEN','LHR','CDG','FRA','AMS','DXB','HND','SIN','SYD'];
+function altFor(t){
+  if(['388','380','744','747','77W','772','773','77L','787','788','789','359','332','333','338','339','A38','767','777'].includes(t))return 39000;
+  if(['763','762','764','752','753','757'].includes(t))return 36000;
+  if(['737','738','739','73H','319','320','321'].includes(t))return 34000;
+  if(['E70','E75','E90','E95','CR7','CR9'].includes(t))return 28000;
+  return 22000;   // AT7/DH8
+}
+function routeSugg(al){
+  const hub=HUBS[al]||'JFK';
+  const picks=DEST_POOL.filter(d=>d!==hub);
+  return [[hub,picks[0]],[hub,picks[4]],[hub,picks[7]]];
+}
+let geEditing=null;   // index in custom scenes, or -1 for new
+function openGalEd(){
+  document.getElementById('palette').classList.remove('show');
+  showGalList();
+  document.getElementById('galed').classList.add('show');
+}
+function showGalList(){
+  document.getElementById('ge-form').style.display='none';
+  document.getElementById('ge-mainbtns').style.display='flex';
+  const list=document.getElementById('ge-list');
+  const scenes=loadScenes();
+  list.innerHTML=scenes.length?scenes.map((s,i)=>
+    `<div class="ge-item"><span>${s.name||('Gallery '+(i+1))}</span>
+     <span><button class="ptog" onclick="editGalScene(${i})">Edit</button>
+     <button class="ptog" onclick="delGalScene(${i})">Delete</button></span></div>`).join('')
+    :'<div class="lv-row" style="opacity:.5;">No custom galleries yet.</div>';
+  document.getElementById('ge-builtin').textContent=
+    'Built-ins: '+(localStorage.getItem('oh_builtin')!=='0'?'On':'Off');
+  list.style.display='block';
+}
+function toggleBuiltin(){
+  const on=localStorage.getItem('oh_builtin')!=='0';
+  localStorage.setItem('oh_builtin',on?'0':'1');
+  showGalList();
+}
+function delGalScene(i){const s=loadScenes();s.splice(i,1);saveScenes(s);showGalList();}
+function newGalScene(){geEditing=-1;openGalForm({name:'',planes:[{},{},{}]});}
+function editGalScene(i){geEditing=i;openGalForm(loadScenes()[i]);}
+function planeRow(idx,p){
+  const alOpts=[...HAS_LIVERY].sort().map(c=>`<option value="${c}">${ALNAMES[c]||c}</option>`).join('');
+  const tOpts=TYPE_LIST.map(([c,l])=>`<option value="${c}" ${p.ft===c?'selected':''}>${l} (${c})</option>`).join('');
+  return `<div class="ge-plane" id="gep${idx}">
+    <div id="gepimg${idx}"><div class="ge-noimg">PICK AIRLINE &amp; TYPE</div></div>
+    <div class="ge-row">
+      <input class="ge-in" list="ge-als" id="geal${idx}" placeholder="Airline (search)" value="${p.cs||''}"
+             oninput="gePrev(${idx})" style="width:150px;"/>
+      <select class="ge-in" id="getc${idx}" onchange="gePrev(${idx});geAlt(${idx})" style="width:150px;">
+        <option value="">Aircraft</option>${tOpts}</select>
+    </div>
+    <span class="ge-lbl">Route</span>
+    <div class="ge-row">
+      <input class="ge-in" id="gefr${idx}" placeholder="From" maxlength="3" value="${p.from||''}" style="width:70px;text-transform:uppercase;"/>
+      <span style="color:rgba(255,255,255,.3)">&ndash;</span>
+      <input class="ge-in" id="geto${idx}" placeholder="To" maxlength="3" value="${p.to||''}" style="width:70px;text-transform:uppercase;"/>
+      <input class="ge-in" id="gealt${idx}" placeholder="Altitude" type="number" step="1000" value="${p.alt||''}" style="width:90px;"/>
+    </div>
+    <div class="ge-sugg" id="gesugg${idx}"></div>
+  </div>`;
+}
+function openGalForm(scene){
+  document.getElementById('ge-list').style.display='none';
+  document.getElementById('ge-mainbtns').style.display='none';
+  document.getElementById('ge-form').style.display='block';
+  document.getElementById('ge-name').value=scene.name||'';
+  // datalist for airline search (built once)
+  if(!document.getElementById('ge-als')){
+    const dl=document.createElement('datalist');dl.id='ge-als';
+    dl.innerHTML=[...HAS_LIVERY].sort().map(c=>`<option value="${c}">${ALNAMES[c]||c}</option>`).join('');
+    document.body.appendChild(dl);
+  }
+  document.getElementById('ge-planes').innerHTML=
+    scene.planes.map((p,i)=>planeRow(i,{cs:p.cs,ft:p.ft||(p.tc?TMAP[p.tc]:''),from:p.from,to:p.to,alt:p.alt})).join('');
+  scene.planes.forEach((p,i)=>{gePrev(i);geSugg(i);});
+}
+function gePrev(i){
+  const al=(document.getElementById('geal'+i).value||'').toUpperCase().trim();
+  const t=document.getElementById('getc'+i).value;
+  const box=document.getElementById('gepimg'+i);
+  if(al&&t&&HAS_LIVERY.has(al)){
+    box.innerHTML=`<img src="/liveries/${al}_${t}.webp" onerror="this.parentNode.innerHTML='<div class=ge-noimg>NO IMAGE FOR THIS COMBO</div>'"/>`;
+    geSugg(i);
+  }else box.innerHTML='<div class="ge-noimg">PICK AIRLINE &amp; TYPE</div>';
+}
+function geSugg(i){
+  const al=(document.getElementById('geal'+i).value||'').toUpperCase().trim();
+  const el=document.getElementById('gesugg'+i);
+  if(!al||!HAS_LIVERY.has(al)){el.innerHTML='';return;}
+  el.innerHTML=routeSugg(al).map(([f,t])=>
+    `<button class="ptog" onclick="document.getElementById('gefr${i}').value='${f}';document.getElementById('geto${i}').value='${t}';">${apName(f)} &ndash; ${apName(t)}</button>`).join('');
+}
+function geAlt(i){
+  const t=document.getElementById('getc'+i).value;
+  const el=document.getElementById('gealt'+i);
+  if(t&&!el.value)el.value=altFor(t);
+}
+function saveGalScene(){
+  const planes=[];
+  for(let i=0;i<3;i++){
+    const al=(document.getElementById('geal'+i).value||'').toUpperCase().trim();
+    const t=document.getElementById('getc'+i).value;
+    if(!al||!t||!HAS_LIVERY.has(al))continue;
+    planes.push({cs:al,tc:t,ft:t,name:ALNAMES[al]||al,
+      from:(document.getElementById('gefr'+i).value||'').toUpperCase(),
+      to:(document.getElementById('geto'+i).value||'').toUpperCase(),
+      alt:parseInt(document.getElementById('gealt'+i).value)||altFor(t)});
+  }
+  if(!planes.length)return;
+  const s=loadScenes();
+  const scene={name:document.getElementById('ge-name').value||('Gallery '+(s.length+1)),planes};
+  if(geEditing>=0)s[geEditing]=scene;else s.push(scene);
+  saveScenes(s);
+  showGalList();
+}
+
+function dismissWelcome(){
+  document.getElementById('welcome').classList.remove('show');
+  localStorage.setItem('oh_welcomed','1');
+}
+function showWelcome(){document.getElementById('welcome').classList.add('show');}
+if(!localStorage.getItem('oh_welcomed'))showWelcome();
+
 document.getElementById('pal-ver').textContent='v'+APP_VERSION;
 function togglePalette(){document.getElementById('palette').classList.toggle('show');}
 function showLog(){
@@ -882,7 +1112,10 @@ function showLog(){
   else{
     const topAl=Object.entries(s.byAl).sort((a,b)=>b[1]-a[1]).slice(0,5)
       .map(([al,n])=>`${ALNAMES[al]||al} &mdash; ${n}`).join('<br>');
-    const rare=s.rare.map(e=>`${ALNAMES[e.al]||e.al} ${FTYPES[e.t]||e.t} &middot; ${e.dt}`).join('<br>')||'&mdash;';
+    const rare=s.rare.map(e=>{
+      const rt=e.fr&&e.to?` &middot; ${apName(e.fr)} &ndash; ${apName(e.to)}`:'';
+      return `${ALNAMES[e.al]||e.al} ${FTYPES[e.t]||e.t}${rt} &middot; ${e.dt}`;
+    }).join('<br>')||'&mdash;';
     const close=s.closest.map(e=>`${e.cs} &middot; ${e.d} mi &middot; ${e.dt}`).join('<br>');
     el.innerHTML=
       `<div class="lv-big">${s.total}</div><div class="lv-sub">aircraft since ${s.since}</div>`+
@@ -983,10 +1216,10 @@ function toggleDemo(){
   demoMode=!demoMode;
   document.getElementById('demobtn').classList.toggle('on',demoMode);
   if(demoMode){
-    demoScene=Math.floor(Math.random()*DEMO_SCENES.length);
+    demoScene=Math.floor(Math.random()*Math.max(allScenes().length,1));
     renderDemo();
     demoTimer=setInterval(()=>{
-      demoScene=(demoScene+1)%DEMO_SCENES.length;
+      demoScene=(demoScene+1)%Math.max(allScenes().length,1);
       renderDemo();
     },30000);
   }else{
@@ -1046,7 +1279,7 @@ initLoc();
 // ?dim=off    -> disable night dimming on this instance
 (function(){
   const q=new URLSearchParams(location.search);
-  if((q.get('mode')==='demo'||q.get('mode')==='demo4')&&!demoMode)toggleDemo();
+  const _m=q.get('mode');if((_m==='demo'||_m==='demo4'||_m==='gallery'||_m==='gallery4')&&!demoMode)toggleDemo();
 })();
 
 // -- Night dimming: 9pm-7am ease to 20% brightness --

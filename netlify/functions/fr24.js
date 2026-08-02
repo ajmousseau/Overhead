@@ -1,6 +1,9 @@
 // netlify/functions/fr24.js — resolve a flight to FR24's internal id
 // Primary match: Mode-S hex (exact, hardware-level). Fallback: callsign / IATA flight no.
+const ALLOWED = ['https://inspiring-chimera-6095cd.netlify.app'];
 exports.handler = async (event) => {
+  const origin = event.headers.origin || event.headers.referer || '';
+  if (origin && !ALLOWED.some(a => origin.startsWith(a))) return { statusCode: 403, body: 'Forbidden' };
   const { lat, lon, cs, hex } = event.queryStringParameters || {};
   if (!lat || !lon) return { statusCode: 400, body: 'Missing lat/lon' };
   const la = parseFloat(lat), lo = parseFloat(lon);
@@ -23,10 +26,10 @@ exports.handler = async (event) => {
     }
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': ALLOWED[0] },
       body: JSON.stringify({ id: byHex || byName }),
     };
   } catch (err) {
-    return { statusCode: 502, headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: err.message }) };
+    return { statusCode: 502, headers: { 'Access-Control-Allow-Origin': ALLOWED[0] }, body: JSON.stringify({ error: err.message }) };
   }
 };
