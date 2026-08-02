@@ -369,6 +369,10 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
   font-size:12px;letter-spacing:.1em;}
 .ge-item .ptog{font-size:7px;padding:4px 9px;}
 .ge-btnrow{display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap;}
+.ge-planes-sub{display:block;font-size:8px;letter-spacing:.12em;color:rgba(255,255,255,.32);margin-top:2px;}
+.ge-tag{font-size:7px;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.28);}
+.ge-off{opacity:.28;}
+.ge-off .ge-tag::after{content:' \00b7 off';}
 
 #zo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:2000;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:Georgia,serif;}
 #zo.show{display:flex;}
@@ -522,7 +526,7 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
 
 <script>
 'use strict';
-const APP_VERSION='1.3.1';   // bump on every push
+const APP_VERSION='1.3.2';   // bump on every push
 const AIRLABS='7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
 const RADII=[10,25,50,100];
 
@@ -973,6 +977,8 @@ const TYPE_LIST=[['388','A380-800'],['380','A380'],['744','747-400'],['747','747
 ['E70','E170'],['E75','E175'],['E90','E190'],['E95','E195'],
 ['CR7','CRJ-700'],['CR9','CRJ-900'],['AT7','ATR 72'],['DH8','Dash 8'],['A38','A380 alt'],
 ['767','767'],['777','777'],['77L','777LR']];
+const BUILTIN_NAMES=['Queens of the Sky','Workhorses','World Tour','Off the Beaten Path',
+'SkyTeam','USA Budget','Europe Budget','Delta Fleet','The Americas'];
 const HUBS={DAL:'ATL',UAL:'ORD',AAL:'DFW',SWA:'MDW',JBU:'JFK',NKS:'FLL',FFT:'DEN',AAY:'LAS',
 ASA:'SEA',HAL:'HNL',ACA:'YYZ',WJA:'YYC',UAE:'DXB',QTR:'DOH',ETD:'AUH',SIA:'SIN',CPA:'HKG',
 KAL:'ICN',JAL:'HND',ANA:'HND',DLH:'FRA',BAW:'LHR',AFR:'CDG',KLM:'AMS',IBE:'MAD',THY:'IST',
@@ -1003,13 +1009,24 @@ function showGalList(){
   document.getElementById('ge-mainbtns').style.display='flex';
   const list=document.getElementById('ge-list');
   const scenes=loadScenes();
-  list.innerHTML=scenes.length?scenes.map((s,i)=>
-    `<div class="ge-item"><span>${s.name||('Gallery '+(i+1))}</span>
+  const builtinOn=localStorage.getItem('oh_builtin')!=='0';
+  const bi=BUILTIN_NAMES.map((n,i)=>{
+    const planes=DEMO_SCENES[i].map(p=>ALNAMES[p.cs]||p.cs).join(' &middot; ');
+    return `<div class="ge-item ge-builtin-item${builtinOn?'':' ge-off'}">
+      <span>${n}<span class="ge-planes-sub">${planes}</span></span>
+      <span class="ge-tag">Built&#8209;in</span></div>`;
+  }).join('');
+  const cu=scenes.length?scenes.map((s,i)=>{
+    const planes=(s.planes||[]).map(p=>ALNAMES[p.cs]||p.cs).join(' &middot; ');
+    return `<div class="ge-item"><span>${s.name||('Gallery '+(i+1))}<span class="ge-planes-sub">${planes}</span></span>
      <span><button class="ptog" onclick="editGalScene(${i})">Edit</button>
-     <button class="ptog" onclick="delGalScene(${i})">Delete</button></span></div>`).join('')
-    :'<div class="lv-row" style="opacity:.5;">No custom galleries yet.</div>';
+     <button class="ptog" onclick="delGalScene(${i})">Delete</button></span></div>`;}).join('')
+    :'<div class="lv-row" style="opacity:.5;margin-top:10px;">No custom galleries yet.</div>';
+  list.innerHTML=
+    `<div class="lv-sec" style="text-align:left;">Built-in galleries</div>${bi}`+
+    `<div class="lv-sec" style="text-align:left;margin-top:20px;">Your galleries</div>${cu}`;
   document.getElementById('ge-builtin').textContent=
-    'Built-ins: '+(localStorage.getItem('oh_builtin')!=='0'?'On':'Off');
+    'Built-ins: '+(builtinOn?'On':'Off');
   list.style.display='block';
 }
 function toggleBuiltin(){
