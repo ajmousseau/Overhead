@@ -447,7 +447,7 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
 
 <script>
 'use strict';
-const APP_VERSION='1.2.1';   // bump on every push
+const APP_VERSION='1.2.2';   // bump on every push
 const AIRLABS='7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
 const RADII=[10,25,50,100];
 
@@ -850,7 +850,7 @@ function render(ac){
     const dist=a._d<=10?a._d.toFixed(1)+' mi overhead':a._d.toFixed(1)+' mi away';
     const cap=capLine(ALNAMES[icao]||icao,FTYPES[tc]||'',routeStr,alt,dist);
     slot.innerHTML=slotHTML(livSrc(icao,tc),cap,livScale(icao));
-    slot.dataset.cs=cs;slot.dataset.lat=a.lat||'';slot.dataset.lon=a.lon||'';
+    slot.dataset.cs=cs;slot.dataset.lat=a.lat||'';slot.dataset.lon=a.lon||'';slot.dataset.hex=(a.hex||'').toLowerCase();
   }
   // Colophon: ? · date · coords · location · N aircraft
   if(uLat)updateColophon(ac.length);
@@ -1083,13 +1083,13 @@ function toIataFlight(cs){
   const iata=IATA_MAP[m[1]];
   return iata?iata+m[2]:cs;
 }
-async function openFR24(cs, lat, lon){
+async function openFR24(cs, lat, lon, hex){
   const flight=toIataFlight(cs);
   let path='data/flights/'+encodeURIComponent(flight.toLowerCase());   // search fallback
   // Resolve FR24's internal flight id -> deep-link straight onto the map
   if(lat&&lon){
     try{
-      const r=await fetchT(`/.netlify/functions/fr24?lat=${lat}&lon=${lon}&cs=${encodeURIComponent(cs)}`,3500);
+      const r=await fetchT(`/.netlify/functions/fr24?lat=${lat}&lon=${lon}&cs=${encodeURIComponent(cs)}&hex=${encodeURIComponent(hex||'')}`,3500);
       if(r.ok){
         const d=await r.json();
         if(d.id)path=encodeURIComponent(cs)+'/'+d.id;
@@ -1118,9 +1118,9 @@ async function openFR24(cs, lat, lon){
     lpSlot=slot;startX=e.clientX;startY=e.clientY;
     lpTimer=setTimeout(()=>{
       if(navigator.vibrate)navigator.vibrate(60);
-      const cs=slot.dataset.cs, la=slot.dataset.lat, lo=slot.dataset.lon;
+      const cs=slot.dataset.cs, la=slot.dataset.lat, lo=slot.dataset.lon, hx=slot.dataset.hex;
       cancel();
-      openFR24(cs, la, lo);
+      openFR24(cs, la, lo, hx);
     },1000);
     // subtle press feedback
     slot.style.transition='opacity 1s ease';
