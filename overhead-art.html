@@ -546,7 +546,7 @@ select.ge-in option{background:#14161A;color:#fff;font-size:15px;}
 
 <script>
 'use strict';
-const APP_VERSION='1.5.0';   // bump on every push
+const APP_VERSION='1.6.0';   // bump on every push
 const AIRLABS='7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
 const RADII=[10,25,50,100];
 
@@ -610,7 +610,7 @@ DLH:'Lufthansa',BAW:'British Airways',AFR:'Air France',KLM:'KLM',IBE:'Iberia',
 EZY:'easyJet',RYR:'Ryanair',SAS:'Scandinavian Airlines',FIN:'Finnair',
 THY:'Turkish Airlines',UAE:'Emirates',QTR:'Qatar Airways',ETD:'Etihad Airways',
 SIA:'Singapore Airlines',CPA:'Cathay Pacific',QFA:'Qantas',ANZ:'Air New Zealand',
-KAL:'Korean Air',JAL:'Japan Airlines',ANA:'All Nippon Airways',FDX:'FedEx Express',UPS:'UPS Airlines',SVA:'Saudia',MMD:'Air Alsie',CAL:'China Airlines',AMX:'Aeromexico',ARG:'Aerol\u00edneas Argentinas',TLM:'Thai Lion Air',TAM:'LATAM Airlines',WJA:'WestJet',VLG:'Vueling',KHV:'Cambodia Angkor Air',TGW:'Scoot',SWR:'Swiss',JNA:'Jin Air',JJA:'Jeju Air',MMA:'Myanmar Airways Intl',KHV:'Cambodia Angkor Air',BBC:'Biman Bangladesh',RNA:'Nepal Airlines',CLX:'Cargolux',AFL:'Aeroflot',THA:'Thai Airways',BKP:'Bangkok Airways',CFE:'BA CityFlyer',VIR:'Virgin Atlantic',DHL:'DHL Aviation',DAE:'DHL Aviation',NOK:'Nok Air',CFG:'Condor',WZZ:'Wizz Air'};
+KAL:'Korean Air',JAL:'Japan Airlines',ANA:'All Nippon Airways',FDX:'FedEx Express',UPS:'UPS Airlines',SVA:'Saudia',MMD:'Air Alsie',EDV:'Endeavor Air',CAL:'China Airlines',AMX:'Aeromexico',ARG:'Aerol\u00edneas Argentinas',TLM:'Thai Lion Air',TAM:'LATAM Airlines',WJA:'WestJet',VLG:'Vueling',KHV:'Cambodia Angkor Air',TGW:'Scoot',SWR:'Swiss',JNA:'Jin Air',JJA:'Jeju Air',MMA:'Myanmar Airways Intl',KHV:'Cambodia Angkor Air',BBC:'Biman Bangladesh',RNA:'Nepal Airlines',CLX:'Cargolux',AFL:'Aeroflot',THA:'Thai Airways',BKP:'Bangkok Airways',CFE:'BA CityFlyer',VIR:'Virgin Atlantic',DHL:'DHL Aviation',DAE:'DHL Aviation',NOK:'Nok Air',CFG:'Condor',WZZ:'Wizz Air'};
 
 const DEMO_SCENES=[
   [ // Scene 1 — Queens of the Sky
@@ -849,21 +849,93 @@ function livScale(icao){
 }
 
 let uLat=null,uLon=null,last=[],demoMode=false,posterNum=Math.floor(Math.random()*900)+100;
-const RC={};let rQ=Promise.resolve();
+// Route cache — persisted 14 days (saves AirLabs quota across reboots)
+const RC=(function(){
+  try{
+    const s=JSON.parse(localStorage.getItem('oh_rc')||'{}');
+    const cut=Date.now()-14*86400000;
+    Object.keys(s).forEach(k=>{if(!s[k]||!s[k]._t||s[k]._t<cut)delete s[k];});
+    return s;
+  }catch(e){return{};}
+})();
+let rcDirty=false;
+setInterval(()=>{if(rcDirty){try{localStorage.setItem('oh_rc',JSON.stringify(RC));}catch(e){}rcDirty=false;}},20000);
+let rQ=Promise.resolve();
 
 function fetchT(u,ms){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||9000);
-  return fetch(u,{signal:c.signal}).finally(()=>clearTimeout(t));}
+  return fetch(u,{signal:c.signal,...(opts||{})}).finally(()=>clearTimeout(t));}
 function hav(a1,b1,a2,b2){if(!a2||!b2)return Infinity;
   const R=3958.8,dr=(a2-a1)*Math.PI/180,dc=(b2-b1)*Math.PI/180;
   const a=Math.sin(dr/2)**2+Math.cos(a1*Math.PI/180)*Math.cos(a2*Math.PI/180)*Math.sin(dc/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
 
-async function lookupRoute(cs){
-  if(RC[cs]!==undefined)return;RC[cs]=null;
-  rQ=rQ.then(()=>new Promise(r=>setTimeout(r,1800))).then(async()=>{
-    try{const r=await fetchT(`https://airlabs.co/api/v9/flight?flight_icao=${encodeURIComponent(cs)}&api_key=${AIRLABS}`,9000);
-      if(r.ok){const d=await r.json();const f=d?.response;
-        if(f?.dep_iata&&f?.arr_iata){RC[cs]={from:f.dep_iata,to:f.arr_iata};render(last);}}}catch(e){}});
+// -- Route lookups, free-first --
+// 1) adsb.lol routeset (free, unlimited, batch)  2) hexdb.io (free)  3) AirLabs (1k/mo)
+const pendingRoutes=new Set();
+async function lookupRoutesBatch(planes){
+  const unknown=planes.filter(p=>{
+    const cs=p.flight.trim().toUpperCase();
+    return RC[cs]===undefined&&!pendingRoutes.has(cs);
+  });
+  if(!unknown.length)return;
+  unknown.forEach(p=>pendingRoutes.add(p.flight.trim().toUpperCase()));
+  // Tier 1: adsb.lol routeset — one POST for all
+  try{
+    const body={planes:unknown.map(p=>({callsign:p.flight.trim().toUpperCase(),lat:p.lat||0,lng:p.lon||0}))};
+    const r=await fetchT('https://api.adsb.lol/api/0/routeset',8000,{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(r.ok){
+      const d=await r.json();
+      (Array.isArray(d)?d:[]).forEach(e=>{
+        const cs=(e.callsign||'').toUpperCase();
+        const codes=(e._airport_codes_iata||'').split('-').filter(c=>c&&c!=='unknown');
+        if(codes.length>=2){
+          RC[cs]={from:codes[0],to:codes[codes.length-1],_t:Date.now()};rcDirty=true;
+          pendingRoutes.delete(cs);
+        }
+      });
+      render(last);
+    }
+  }catch(e){}
+  // Tier 2+3 for stragglers, one at a time, spaced
+  for(const p of unknown){
+    const cs=p.flight.trim().toUpperCase();
+    if(RC[cs]!==undefined&&RC[cs]!==null){pendingRoutes.delete(cs);continue;}
+    await hexdbRoute(cs) || await airlabsRoute(cs);
+    pendingRoutes.delete(cs);
+    await new Promise(res=>setTimeout(res,1200));
+  }
+}
+async function hexdbRoute(cs){
+  try{
+    const r=await fetchT(`https://hexdb.io/api/v1/route/icao/${encodeURIComponent(cs)}`,6000);
+    if(r.ok){
+      const d=await r.json();
+      const codes=(d.route||'').split('-').filter(Boolean);
+      if(codes.length>=2){
+        // hexdb returns ICAO airport codes (KGRR); convert to IATA-ish by stripping K/C prefix heuristics is unsafe — use as-is if 3 letters
+        const f=codes[0].length===4?codes[0].slice(1):codes[0];
+        const t=codes[codes.length-1].length===4?codes[codes.length-1].slice(1):codes[codes.length-1];
+        RC[cs]={from:f,to:t,_t:Date.now()};rcDirty=true;render(last);
+        return true;
+      }
+    }
+  }catch(e){}
+  return false;
+}
+async function airlabsRoute(cs){
+  try{
+    const r=await fetchT(`https://airlabs.co/api/v9/flight?flight_icao=${encodeURIComponent(cs)}&api_key=${AIRLABS}`,7000);
+    if(r.ok){
+      const d=await r.json();const f=d.response;
+      if(f?.dep_iata&&f?.arr_iata){
+        RC[cs]={from:f.dep_iata,to:f.arr_iata,_t:Date.now()};rcDirty=true;render(last);
+        return true;
+      }
+    }
+  }catch(e){}
+  RC[cs]=null;   // mark tried this session
+  return false;
 }
 
 async function fetchFlights(){
@@ -915,9 +987,9 @@ async function fetchFlights(){
   }
 
   best.forEach(a=>{if(a.dep_iata&&a.arr_iata){const cs=a.flight.trim().toUpperCase();
-    if(RC[cs]===undefined)RC[cs]={from:a.dep_iata,to:a.arr_iata};}});
+    if(RC[cs]===undefined){RC[cs]={from:a.dep_iata,to:a.arr_iata,_t:Date.now()};rcDirty=true;}}});
   last=best;render(best);
-  best.forEach(a=>{const cs=a.flight.trim().toUpperCase();if(RC[cs]===undefined)lookupRoute(cs);});
+  lookupRoutesBatch(best);
 }
 
 function capLine(alName,typeName,route,alt,dist){
