@@ -1,54 +1,61 @@
-// netlify/functions/airlabs.js — shared AirLabs route lookup
-// Blob-cached 30 days across ALL devices + monthly budget guard.
-import { getStore } from "@netlify/blobs";
-
+// netlify/functions/airlabs.js — shared AirLabs lookup (CommonJS, blobs optional)
 const ALLOWED = ['https://inspiring-chimera-6095cd.netlify.app'];
 const KEY = '7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
-const MONTHLY_BUDGET = 24000;  // 25k plan, small safety margin
+const MONTHLY_BUDGET = 24000;
 
-export default async (req) => {
-  const origin = req.headers.get('origin') || req.headers.get('referer') || '';
+// Blobs if available; otherwise warm-instance memory cache
+let store = null;
+try {
+  const { getStore } = require('@netlify/blobs');
+  store = getStore('routes');
+} catch (e) { /* dependency absent: memory only */ }
+const mem = {};
+
+async function cacheGet(k) {
+  if (store) { try { return await store.get(k, { type: 'json' }); } catch (e) {} }
+  return mem[k] || null;
+}
+async function cacheSet(k, v) {
+  if (store) { try { await store.setJSON(k, v); return; } catch (e) {} }
+  mem[k] = v;
+}
+
+exports.handler = async (event) => {
+  const origin = event.headers.origin || event.headers.referer || '';
   if (origin && !ALLOWED.some(a => origin.startsWith(a)))
-    return new Response('Forbidden', { status: 403 });
+    return resp(403, { error: 'forbidden' });
 
-  const url = new URL(req.url);
-  const cs = (url.searchParams.get('cs') || '').toUpperCase();
-  if (!/^[A-Z]{2,3}\d[A-Z0-9]*$/.test(cs)) return json({ route: null });
+  const cs = (event.queryStringParameters?.cs || '').toUpperCase();
+  if (!/^[A-Z]{2,3}\d[A-Z0-9]*$/.test(cs)) return resp(200, { route: null, why: 'bad-cs' });
 
-  const store = getStore('routes');
+  const cached = await cacheGet(cs);
+  if (cached && cached.t > Date.now() - 30 * 86400000)
+    return resp(200, { route: cached.r, cached: true });
 
-  // Cache hit? (30-day TTL)
-  const cached = await store.get(cs, { type: 'json' }).catch(() => null);
-  if (cached && cached.t > Date.now() - 30 * 86400000) {
-    return json({ route: cached.r, cached: true });
-  }
-
-  // Budget check
   const month = new Date().toISOString().slice(0, 7);
-  const budget = (await store.get('budget_' + month, { type: 'json' }).catch(() => null)) || { n: 0 };
-  if (budget.n >= MONTHLY_BUDGET) return json({ route: null, budget: 'exhausted' });
+  const budget = (await cacheGet('budget_' + month)) || { n: 0 };
+  if (budget.n >= MONTHLY_BUDGET) return resp(200, { route: null, why: 'budget' });
 
-  // AirLabs call
-  let route = null;
+  let route = null, why = 'airlabs-empty';
   try {
     const r = await fetch(`https://airlabs.co/api/v9/flight?flight_icao=${cs}&api_key=${KEY}`);
     if (r.ok) {
       const d = await r.json();
+      if (d.error) why = 'airlabs-error:' + (d.error.message || d.error.code || 'unknown');
       const f = d.response;
-      if (f?.dep_iata && f?.arr_iata) route = { from: f.dep_iata, to: f.arr_iata };
-    }
-  } catch (e) {}
+      if (f?.dep_iata && f?.arr_iata) { route = { from: f.dep_iata, to: f.arr_iata }; why = 'ok'; }
+    } else why = 'airlabs-http-' + r.status;
+  } catch (e) { why = 'airlabs-fetch-fail'; }
 
   budget.n++;
-  await store.setJSON('budget_' + month, budget).catch(() => {});
-  // Nulls cache only 1h now — plenty of budget to retry unknowns
-  await store.setJSON(cs, { r: route, t: route ? Date.now() : Date.now() - (30*86400000 - 3600000) }).catch(() => {});
+  await cacheSet('budget_' + month, budget);
+  await cacheSet(cs, { r: route, t: route ? Date.now() : Date.now() - (30 * 86400000 - 3600000) });
 
-  return json({ route, spent: budget.n });
+  return resp(200, { route, why, spent: budget.n });
 };
 
-function json(body) {
-  return new Response(JSON.stringify(body), {
+function resp(status, body) {
+  return { statusCode: status,
     headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': ALLOWED[0] },
-  });
+    body: JSON.stringify(body) };
 }
