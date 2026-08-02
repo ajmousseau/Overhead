@@ -175,6 +175,10 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
   .slot .plane-wrap img.livery{max-width:92%;max-height:100%;}
   .slot .plane-cap{text-align:center !important;padding:6px 4px 0;white-space:normal;line-height:1.5;}
 
+  /* Four-plane demo instance (?mode=demo4): 4th plane replaces the placard */
+  body.fourdemo #s3{display:flex !important;}
+  body.fourdemo #colophon{display:none !important;}
+
   /* Colophon becomes the 4th cell — gallery placard */
   #colophon{
     grid-column:2;grid-row:2;
@@ -405,6 +409,7 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
     <div class="pal-toggles">
       <button class="ptog" id="demobtn" onclick="toggleDemo()">Demo</button>
       <button class="ptog" onclick="hardRefresh()">Refresh</button>
+      <button class="ptog" onclick="exitApp()">Exit</button>
     </div>
   </div>
 
@@ -414,6 +419,7 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
     <div class="slot" id="s0"><div class="empty-note">Listening for aircraft</div></div>
     <div class="slot" id="s1"></div>
     <div class="slot" id="s2"></div>
+    <div class="slot" id="s3" style="display:none"></div>
     <div id="colophon">&mdash;</div>
   </div>
 </div>
@@ -548,6 +554,21 @@ const DEMO_SCENES=[
   ],
 ];
 let demoScene=0, demoTimer=null;
+
+// Heavy hitters — the rotating 4th plane in ?mode=demo4
+const HEAVIES=[
+  {cs:'KAL',tc:'B744',name:'Korean Air',from:'ICN',to:'JFK',alt:38000},
+  {cs:'UAE',tc:'A388',name:'Emirates',from:'DXB',to:'JFK',alt:40000},
+  {cs:'BAW',tc:'A388',name:'British Airways',from:'LHR',to:'ORD',alt:39000},
+  {cs:'SIA',tc:'A388',name:'Singapore Airlines',from:'SIN',to:'JFK',alt:41000},
+  {cs:'QFA',tc:'A388',name:'Qantas',from:'SYD',to:'LAX',alt:40000},
+  {cs:'ANA',tc:'B789',name:'All Nippon Airways',from:'HND',to:'ORD',alt:39000},
+  {cs:'CPA',tc:'B77W',name:'Cathay Pacific',from:'HKG',to:'JFK',alt:40000},
+  {cs:'DLH',tc:'B744',name:'Lufthansa',from:'FRA',to:'ORD',alt:38000},
+  {cs:'CAL',tc:'B744',name:'China Airlines',from:'TPE',to:'LAX',alt:38000},
+];
+const FOURMODE=new URLSearchParams(location.search).get('mode')==='demo4';
+if(FOURMODE)document.body.classList.add('fourdemo');
 
 function alOf(cs){return(cs||'').replace(/\d.*$/,'').toUpperCase();}
 
@@ -789,6 +810,17 @@ function renderDemo(){
     slot.style.opacity='0';
     setTimeout(()=>{slot.innerHTML=slotHTML(src,cap,scale);slot.dataset.cs=p.cs;slot.style.opacity='1';},350);
   });
+  if(FOURMODE){
+    const hv=HEAVIES[demoScene%HEAVIES.length];
+    let src,scale;
+    if(PINNED[hv.cs]){src=PINNED[hv.cs].src;scale=PINNED[hv.cs].scale;}
+    else{const t=TMAP[hv.tc]||hv.tc;src=`/liveries/${hv.cs}_${t}.webp`;scale=1;}
+    const route=apName(hv.from)+' &ndash; '+apName(hv.to);
+    const cap=capLine(hv.name,FTYPES[hv.tc]||'',route,hv.alt,'');
+    const s3=document.getElementById('s3');
+    s3.style.opacity='0';
+    setTimeout(()=>{s3.innerHTML=slotHTML(src,cap,scale);s3.dataset.cs=hv.cs;s3.style.opacity='1';},350);
+  }
   updateColophon(3);
 }
 
@@ -813,6 +845,16 @@ function render(ac){
 }
 
 // -- Controls --
+function exitApp(){
+  // Chrome windows launched by the .bat close with window.close();
+  // PWAs and normal tabs may refuse — then exit fullscreen as fallback.
+  window.close();
+  setTimeout(()=>{
+    if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+    // last resort: blank the page so any kiosk shell can be dismissed
+    document.body.innerHTML='<div style="color:#888;font:12px Georgia;letter-spacing:.3em;text-align:center;margin-top:40vh;">CLOSED &mdash; press Alt+F4 or swipe away</div>';
+  },300);
+}
 function hardRefresh(){
   // Cache-busting reload — pulls the latest deployed version
   const u=new URL(window.location.href);
@@ -991,7 +1033,7 @@ initLoc();
 // ?dim=off    -> disable night dimming on this instance
 (function(){
   const q=new URLSearchParams(location.search);
-  if(q.get('mode')==='demo'&&!demoMode)toggleDemo();
+  if((q.get('mode')==='demo'||q.get('mode')==='demo4')&&!demoMode)toggleDemo();
 })();
 
 // -- Night dimming: 9pm-7am ease to 20% brightness --
