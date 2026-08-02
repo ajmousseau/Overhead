@@ -841,7 +841,20 @@ function initLoc(){
 setInterval(fetchFlights,30000);
 initLoc();
 
-// -- Long-press a plane (3s) to open the flight in Flightradar24 --
+// -- Open a flight in FR24: Android intent -> app directly, web fallback --
+function openFR24(cs){
+  const web='https://www.flightradar24.com/'+encodeURIComponent(cs);
+  if(/android/i.test(navigator.userAgent)){
+    // intent:// hands off to the app without the page racing it to the web URL
+    window.location.href='intent://www.flightradar24.com/'+encodeURIComponent(cs)+
+      '#Intent;scheme=https;package=com.flightradar24free;'+
+      'S.browser_fallback_url='+encodeURIComponent(web)+';end';
+  }else{
+    window.open(web,'_blank');
+  }
+}
+
+// -- Long-press a plane (1s) to open the flight in Flightradar24 --
 (function(){
   let lpTimer=null, lpSlot=null, startX=0, startY=0;
   const stage=document.getElementById('stage');
@@ -857,11 +870,10 @@ initLoc();
       if(navigator.vibrate)navigator.vibrate(60);
       const cs=slot.dataset.cs;
       cancel();
-      // flightradar24.com links open the FR24 app if installed (Android App Links)
-      window.location.href='https://www.flightradar24.com/'+encodeURIComponent(cs);
-    },3000);
+      openFR24(cs);
+    },1000);
     // subtle press feedback
-    slot.style.transition='opacity 3s ease';
+    slot.style.transition='opacity 1s ease';
     slot.style.opacity='0.55';
   });
   stage.addEventListener('pointermove',e=>{
