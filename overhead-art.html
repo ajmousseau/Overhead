@@ -46,8 +46,20 @@ body{font-family:Georgia,'Times New Roman',serif;}
 .mbtn:hover,.mbtn.on{color:var(--fg);border-bottom-color:var(--fg2);}
 
 /* -- Palette popup -- */
-#palette{display:none;position:fixed;top:clamp(48px,7vh,80px);left:clamp(28px,4vw,64px);z-index:300;gap:8px;padding:10px 12px;background:rgba(0,0,0,.55);backdrop-filter:blur(14px);border-radius:2px;}
+#palette{display:none;position:fixed;top:clamp(48px,7vh,80px);left:clamp(28px,4vw,64px);z-index:300;flex-direction:column;gap:10px;padding:12px 14px;background:rgba(0,0,0,.6);backdrop-filter:blur(16px);border-radius:3px;}
 #palette.show{display:flex;}
+.pal-swatches{display:flex;gap:8px;}
+.pal-divider{height:1px;background:rgba(255,255,255,.12);}
+.pal-toggles{display:flex;gap:10px;justify-content:center;}
+.ptog{
+  font-family:Georgia,serif;background:none;
+  border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.55);
+  font-size:8px;letter-spacing:.25em;cursor:pointer;
+  text-transform:uppercase;padding:5px 12px;border-radius:2px;
+  transition:all .25s;
+}
+.ptog:hover{color:#fff;border-color:rgba(255,255,255,.4);}
+.ptog.on{color:#fff;border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.08);}
 .sw{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.15);}
 .sw:hover,.sw.act{border-color:#fff;}
 
@@ -77,8 +89,34 @@ body{font-family:Georgia,'Times New Roman',serif;}
   object-fit:contain;display:block;
   filter:drop-shadow(0 10px 34px rgba(0,0,0,.32));
 }
-body.artfx .plane-wrap img.livery{
-  filter:drop-shadow(0 10px 34px rgba(0,0,0,.28)) contrast(1.05) saturate(0.8) sepia(0.1) brightness(0.97);
+/* -- Golden Age mode — gouache travel-poster treatment -- */
+body.golden .plane-wrap img.livery{
+  filter:url(#gouache) contrast(1.18) saturate(1.55) brightness(1.04) drop-shadow(0 8px 24px rgba(0,0,0,.3));
+  animation:drift 9s ease-in-out infinite;
+}
+body.golden .slot:nth-child(2) .plane-wrap img.livery{animation-delay:-3s;animation-duration:11s;}
+body.golden .slot:nth-child(3) .plane-wrap img.livery{animation-delay:-6s;animation-duration:10s;}
+@keyframes drift{
+  0%,100%{transform:translateY(0) rotate(0deg);}
+  25%{transform:translateY(-7px) rotate(0.35deg);}
+  50%{transform:translateY(-2px) rotate(-0.2deg);}
+  75%{transform:translateY(-9px) rotate(0.25deg);}
+}
+/* Warm poster glow + subtle sun wash in Golden Age */
+body.golden #stage::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:-1;
+  background:radial-gradient(ellipse 60% 45% at 72% 18%, rgba(255,190,80,.14), transparent 70%);
+}
+/* Drifting cloud shapes */
+body.golden .cloud{
+  position:absolute;pointer-events:none;z-index:-1;
+  background:currentColor;color:var(--fg);
+  opacity:.05;border-radius:100px;
+  animation:cloudDrift linear infinite;
+}
+@keyframes cloudDrift{
+  from{transform:translateX(-160px);}
+  to{transform:translateX(calc(100vw + 160px));}
 }
 
 /* Caption — one small line under the plane, aligned with the stagger */
@@ -95,9 +133,9 @@ body.artfx .plane-wrap img.livery{
 .plane-cap b{font-weight:400;color:var(--fg);letter-spacing:.14em;}
 .plane-cap .sep{margin:0 .6em;opacity:.5;}
 
-/* Print grain */
-body.artfx #stage::after{
-  content:'';position:absolute;inset:0;pointer-events:none;opacity:.045;
+/* Paper grain in Golden Age */
+body.golden #stage::after{
+  content:'';position:absolute;inset:0;pointer-events:none;opacity:.06;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
   mix-blend-mode:overlay;
 }
@@ -143,21 +181,37 @@ body.artfx #stage::after{
 <div id="poster">
   <div id="mast">
     <div class="mast-dot" id="brand" onclick="togglePalette()" title="Palette"></div>
-    <div class="mast-ctrl">
-      <button class="mbtn" id="artbtn" onclick="toggleArt()">Print</button>
-      <button class="mbtn" id="demobtn" onclick="toggleDemo()">Demo</button>
-    </div>
+    <div class="mast-ctrl"></div>
   </div>
 
   <div id="palette">
-    <div class="sw act" data-t="portrait" style="background:#9B1B1B"></div>
-    <div class="sw" data-t="midnight" style="background:#10141C"></div>
-    <div class="sw" data-t="navy"     style="background:#1B2B4A"></div>
-    <div class="sw" data-t="dusk"     style="background:#3E3552"></div>
-    <div class="sw" data-t="marine"   style="background:#0F3B3A"></div>
-    <div class="sw" data-t="mustard"  style="background:#B8860B"></div>
-    <div class="sw" data-t="cream"    style="background:#F2ECDF"></div>
+    <div class="pal-swatches">
+      <div class="sw act" data-t="portrait" style="background:#9B1B1B"></div>
+      <div class="sw" data-t="midnight" style="background:#10141C"></div>
+      <div class="sw" data-t="navy"     style="background:#1B2B4A"></div>
+      <div class="sw" data-t="dusk"     style="background:#3E3552"></div>
+      <div class="sw" data-t="marine"   style="background:#0F3B3A"></div>
+      <div class="sw" data-t="mustard"  style="background:#B8860B"></div>
+      <div class="sw" data-t="cream"    style="background:#F2ECDF"></div>
+    </div>
+    <div class="pal-divider"></div>
+    <div class="pal-toggles">
+      <button class="ptog" id="goldbtn" onclick="toggleGold()">Golden Age</button>
+      <button class="ptog" id="demobtn" onclick="toggleDemo()">Demo</button>
+    </div>
   </div>
+
+  <!-- Posterize filter for Golden Age mode -->
+  <svg width="0" height="0" style="position:absolute;">
+    <filter id="gouache">
+      <feComponentTransfer>
+        <feFuncR type="discrete" tableValues="0.06 0.22 0.4 0.58 0.76 0.94"/>
+        <feFuncG type="discrete" tableValues="0.06 0.22 0.4 0.58 0.76 0.94"/>
+        <feFuncB type="discrete" tableValues="0.06 0.22 0.4 0.58 0.76 0.94"/>
+      </feComponentTransfer>
+      <feGaussianBlur stdDeviation="0.4"/>
+    </filter>
+  </svg>
 
   <div id="stage">
     <div class="slot" id="s0"><div class="empty-note">Listening for aircraft</div></div>
@@ -390,12 +444,35 @@ const st=localStorage.getItem('oh_theme');
 if(st){document.body.setAttribute('data-theme',st);
   document.querySelectorAll('.sw').forEach(s=>s.classList.toggle('act',s.dataset.t===st));}
 
-function toggleArt(){
-  document.body.classList.toggle('artfx');
-  document.getElementById('artbtn').classList.toggle('on',document.body.classList.contains('artfx'));
-  localStorage.setItem('oh_art',document.body.classList.contains('artfx')?'1':'0');}
-if(localStorage.getItem('oh_art')==='1'){document.body.classList.add('artfx');
-  document.getElementById('artbtn').classList.add('on');}
+let cloudEls=[];
+function spawnClouds(){
+  const stage=document.getElementById('stage');
+  clearClouds();
+  for(let i=0;i<5;i++){
+    const c=document.createElement('div');
+    c.className='cloud';
+    const w=80+Math.random()*180, h=w*0.32;
+    c.style.width=w+'px'; c.style.height=h+'px';
+    c.style.top=(5+Math.random()*85)+'%';
+    c.style.animationDuration=(50+Math.random()*70)+'s';
+    c.style.animationDelay=(-Math.random()*60)+'s';
+    stage.appendChild(c);
+    cloudEls.push(c);
+  }
+}
+function clearClouds(){cloudEls.forEach(c=>c.remove());cloudEls=[];}
+
+function toggleGold(){
+  const on=document.body.classList.toggle('golden');
+  document.getElementById('goldbtn').classList.toggle('on',on);
+  localStorage.setItem('oh_gold',on?'1':'0');
+  on?spawnClouds():clearClouds();
+}
+if(localStorage.getItem('oh_gold')==='1'){
+  document.body.classList.add('golden');
+  document.getElementById('goldbtn').classList.add('on');
+  setTimeout(spawnClouds,300);
+}
 
 function toggleDemo(){
   demoMode=!demoMode;
