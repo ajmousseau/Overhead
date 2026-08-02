@@ -693,12 +693,18 @@ const PINNED={
 };
 const AL_ALIAS={};
 
+// Airline+type combo overrides — for fleets flying another brand's livery
+// (Alaska's A330s are ex-Hawaiian aircraft still in Hawaiian colors)
+const COMBO_OVERRIDE={
+  'ASA_332':'HAL_332','ASA_333':'HAL_333','ASA_339':'HAL_339',
+};
 function livSrc(icao,tc){
   if(PINNED[icao])return PINNED[icao].src;
   const fileIcao=AL_ALIAS[icao]||icao;
   if(!HAS_LIVERY.has(fileIcao))return null;
   const t=TMAP[tc]||DEFAULT_TYPE[fileIcao]||DEFAULT_TYPE[icao]||'320';
-  return `/liveries/${fileIcao}_${t}.webp`;
+  const key=`${fileIcao}_${t}`;
+  return `/liveries/${COMBO_OVERRIDE[key]||key}.webp`;
 }
 function livScale(icao){
   return PINNED[icao] ? PINNED[icao].scale : 1;
@@ -1058,8 +1064,9 @@ initLoc();
 // -- Open a flight in FR24: Android intent -> app directly, web fallback --
 function openFR24(cs){
   if(/android/i.test(navigator.userAgent)){
-    // App only — no browser fallback
-    window.location.href='intent://www.flightradar24.com/'+encodeURIComponent(cs)+
+    // /data/flights/ is the path FR24's app resolves to a native flight screen
+    window.location.href='intent://www.flightradar24.com/data/flights/'+
+      encodeURIComponent(cs.toLowerCase())+
       '#Intent;scheme=https;package=com.flightradar24free;end';
   }else{
     window.open('https://www.flightradar24.com/'+encodeURIComponent(cs),'_blank');
