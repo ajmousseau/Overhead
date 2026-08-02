@@ -107,6 +107,44 @@ body{font-family:Georgia,'Times New Roman',serif;}
 .plane-cap b{font-weight:400;color:var(--fg);letter-spacing:.14em;}
 .plane-cap .sep{margin:0 .6em;opacity:.5;}
 
+/* --- PORTRAIT / POSTER MODE --- */
+@media (orientation:portrait){
+  #poster{padding:clamp(24px,4vh,56px) clamp(18px,5vw,44px) clamp(16px,2.5vh,32px);}
+
+  /* Tighter slot rhythm — plane and caption as one unit */
+  #stage{justify-content:space-evenly;gap:0;}
+  .slot{justify-content:flex-end;gap:0;}
+
+  /* Planes: full width, hug their captions */
+  .plane-wrap{
+    align-items:flex-end;
+    padding:0 !important;
+    justify-content:center !important;   /* no stagger in portrait */
+  }
+  .plane-wrap img.livery{
+    max-width:96%;
+    max-height:92%;
+  }
+
+  /* Gentle alternating alignment via caption instead of plane position */
+  .plane-cap{
+    padding:6px 4px 0;
+    text-align:center !important;
+    font-size:clamp(8px,2.4vw,13px);
+    letter-spacing:.1em;
+    white-space:normal;          /* allow 2-line wrap on narrow walls */
+    line-height:1.5;
+  }
+
+  /* Colophon slightly larger for poster legibility */
+  #colophon{
+    font-size:clamp(7px,1.8vw,11px);
+    padding-top:clamp(12px,2vh,20px);
+    white-space:normal;line-height:1.6;
+  }
+  #colophon .rule{width:clamp(16px,6vw,40px);margin:0 clamp(8px,2.5vw,16px);}
+}
+
 
 #stage{position:relative;}
 
