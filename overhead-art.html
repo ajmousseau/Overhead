@@ -546,7 +546,7 @@ select.ge-in option{background:#14161A;color:#fff;font-size:15px;}
 
 <script>
 'use strict';
-const APP_VERSION='1.6.5';   // bump on every push
+const APP_VERSION='1.7.0';   // bump on every push
 const AIRLABS='7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
 const RADII=[10,25,50,100];
 
@@ -834,12 +834,12 @@ ETD:'789',SIA:'359',CPA:'359',QFA:'738',ANZ:'789',KAL:'77W',JAL:'789',ANA:'789'}
 // (custom images are tight-cropped; LogoStream renders have padding, so customs
 //  render oversized without a scale factor)
 const PINNED={
-  GJS:{src:'/liveries/GJS_CR7.webp',scale:0.6},
-  VIR:{src:'/liveries/VIR_744.webp',scale:0.65},
-  ENY:{src:'/liveries/ENY_CR7.webp',scale:1},
-  EDV:{src:'/liveries/DLC_CR7.webp',scale:1},
-  SKW:{src:'/liveries/DLC_CR7.webp',scale:1},
-  RPA:{src:'/liveries/DLC_CR7.webp',scale:1},
+  GJS:{src:'/liveries/GJS_CR7.webp',scale:0.6,tlabel:'CRJ-550'},
+  VIR:{src:'/liveries/VIR_744.webp',scale:0.65,tlabel:'Boeing 747-400'},
+  ENY:{src:'/liveries/ENY_CR7.webp',scale:1,tlabel:'CRJ-700'},
+  EDV:{src:'/liveries/DLC_CR7.webp',scale:1,tlabel:'CRJ-900'},
+  SKW:{src:'/liveries/DLC_CR7.webp',scale:1,tlabel:'CRJ-900'},
+  RPA:{src:'/liveries/DLC_CR7.webp',scale:1,tlabel:'Embraer E175'},
 };
 const AL_ALIAS={};
 
@@ -1059,7 +1059,7 @@ function render(ac){
     const routeStr=route?.from&&route?.to?apName(route.from)+' &ndash; '+apName(route.to):'';
     const alt=a.alt_baro&&a.alt_baro!=='ground'?parseInt(a.alt_baro):null;
     const dist=a._d<=10?a._d.toFixed(1)+' mi overhead':a._d.toFixed(1)+' mi away';
-    const cap=capLine(ALNAMES[icao]||icao,FTYPES[tc]||'',routeStr,alt,dist);
+    const cap=capLine(ALNAMES[icao]||icao,FTYPES[tc]||PINNED[icao]?.tlabel||'',routeStr,alt,dist);
     slot.innerHTML=slotHTML(livSrc(icao,tc),cap,livScale(icao));
     slot.dataset.cs=cs;slot.dataset.lat=a.lat||'';slot.dataset.lon=a.lon||'';slot.dataset.hex=(a.hex||'').toLowerCase();
   }
@@ -1217,12 +1217,34 @@ function gePrev(i){
     geSugg(i);
   }else box.innerHTML='<div class="ge-noimg">PICK AIRLINE &amp; TYPE</div>';
 }
-function geSugg(i){
+const suggCache={};
+async function geSugg(i){
   const al=(document.getElementById('geal'+i).value||'').toUpperCase().trim();
   const el=document.getElementById('gesugg'+i);
   if(!al||!HAS_LIVERY.has(al)){el.innerHTML='';return;}
-  el.innerHTML=routeSugg(al).map(([f,t])=>
-    `<button class="ptog" onclick="document.getElementById('gefr${i}').value='${f}';document.getElementById('geto${i}').value='${t}';">${apName(f)} &ndash; ${apName(t)}</button>`).join('');
+  const chips=list=>{
+    el.innerHTML=list.map(([f,t])=>
+      `<button class="ptog" onclick="document.getElementById('gefr${i}').value='${f}';document.getElementById('geto${i}').value='${t}';">${apName(f)} &ndash; ${apName(t)}</button>`).join('');
+  };
+  chips(routeSugg(al));   // instant hub-based chips while real ones load
+  // Real routes from the airline's actual network
+  const iata=IATA_MAP[al];
+  if(!iata)return;
+  try{
+    if(!suggCache[al]){
+      const r=await fetchT(`/.netlify/functions/routesugg?iata=${iata}`,6000);
+      if(r.ok){const d=await r.json();suggCache[al]=d.routes||[];}
+      else suggCache[al]=[];
+    }
+    const real=suggCache[al];
+    if(real.length>=1){
+      // pick 3 spread across the network
+      const picks=[];
+      const step=Math.max(1,Math.floor(real.length/3));
+      for(let k=0;k<real.length&&picks.length<3;k+=step)picks.push([real[k].from,real[k].to]);
+      chips(picks);
+    }
+  }catch(e){}
 }
 function geAlt(i){
   const t=document.getElementById('getc'+i).value;
