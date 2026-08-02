@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>OVERHEAD</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0A0B0D">
+<link rel="manifest" href="/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&family=Cormorant+Garamond:ital@0;1&family=Cinzel&family=Montserrat:wght@300;400&family=Jost:ital,wght@0,300;0,400;1,300&family=Poiret+One&family=Josefin+Sans:ital,wght@0,300;1,300&family=Great+Vibes&family=Parisienne&family=Pinyon+Script&display=swap" rel="stylesheet">
@@ -223,7 +228,13 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
     letter-spacing:.14em;color:var(--fg2);
   }
   /* Position: top puts the colophon before the planes */
-  body[data-pclock="top"] #colophon{order:-1;}
+  body[data-pclock="top"] #colophon{order:-1;padding-bottom:0;}
+  body[data-pclock="bottom"] #colophon{padding-top:0;}
+
+  /* In clock mode, center planes within slots so whitespace distributes
+     evenly instead of pooling under the clock */
+  body[data-pclock] .slot{justify-content:center;}
+  body[data-pclock] #stage{padding-bottom:clamp(8px,1.5vh,18px);}
 }
 
 /* --- PORTRAIT / POSTER MODE --- */
@@ -697,15 +708,24 @@ function togglePalette(){document.getElementById('palette').classList.toggle('sh
 document.addEventListener('click',e=>{
   const p=document.getElementById('palette');
   if(!p.contains(e.target)&&e.target.id!=='brand')p.classList.remove('show');});
+function applyTheme(t){
+  document.body.setAttribute('data-theme',t);
+  document.documentElement.setAttribute('data-theme',t);
+  // Sync Android status/nav bar color to theme background
+  const bg=getComputedStyle(document.body).getPropertyValue('--bg').trim();
+  let meta=document.querySelector('meta[name="theme-color"]');
+  if(meta&&bg)meta.setAttribute('content',bg);
+}
 document.querySelectorAll('.sw').forEach(s=>{
   s.addEventListener('click',()=>{
-    document.body.setAttribute('data-theme',s.dataset.t);
+    applyTheme(s.dataset.t);
     document.querySelectorAll('.sw').forEach(x=>x.classList.remove('act'));
     s.classList.add('act');
     localStorage.setItem('oh_theme',s.dataset.t);});});
 const st=localStorage.getItem('oh_theme');
-if(st){document.body.setAttribute('data-theme',st);
+if(st){applyTheme(st);
   document.querySelectorAll('.sw').forEach(s=>s.classList.toggle('act',s.dataset.t===st));}
+else applyTheme(document.body.getAttribute('data-theme')||'portrait');
 
 // -- Font / text size / plane size pickers --
 const FONTMAP={
@@ -818,6 +838,20 @@ function initLoc(){
 
 setInterval(fetchFlights,30000);
 initLoc();
+
+// -- Screen wake lock (keeps display on — bedside/wall use) --
+let wakeLock=null;
+async function grabWakeLock(){
+  try{
+    if('wakeLock' in navigator){
+      wakeLock=await navigator.wakeLock.request('screen');
+    }
+  }catch(e){}
+}
+grabWakeLock();
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible')grabWakeLock();
+});
 </script>
 </body>
 </html>
