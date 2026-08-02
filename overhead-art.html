@@ -116,6 +116,7 @@ body{font-family:var(--fontpick);}
 .slot:nth-child(3) .plane-wrap{justify-content:center;}
 
 .plane-wrap img.livery{
+  -webkit-touch-callout:none;user-select:none;-webkit-user-select:none;
   max-width:min(88%,1500px); max-height:100%;
   width:auto;height:auto;
   object-fit:contain;display:block;
@@ -679,7 +680,7 @@ function renderDemo(){
     const cap=capLine(p.name,FTYPES[p.tc]||'',route,p.alt,'');
     const slot=document.getElementById('s'+i);
     slot.style.opacity='0';
-    setTimeout(()=>{slot.innerHTML=slotHTML(src,cap,scale);slot.style.opacity='1';},350);
+    setTimeout(()=>{slot.innerHTML=slotHTML(src,cap,scale);slot.dataset.cs=p.cs;slot.style.opacity='1';},350);
   });
   updateColophon(3);
 }
@@ -698,6 +699,7 @@ function render(ac){
     const dist=a._d<=10?a._d.toFixed(1)+' mi overhead':a._d.toFixed(1)+' mi away';
     const cap=capLine(ALNAMES[icao]||icao,FTYPES[tc]||'',routeStr,alt,dist);
     slot.innerHTML=slotHTML(livSrc(icao,tc),cap,livScale(icao));
+    slot.dataset.cs=cs;
   }
   // Colophon: ? · date · coords · location · N aircraft
   if(uLat)updateColophon(ac.length);
@@ -838,6 +840,38 @@ function initLoc(){
 
 setInterval(fetchFlights,30000);
 initLoc();
+
+// -- Long-press a plane (3s) to open the flight in Flightradar24 --
+(function(){
+  let lpTimer=null, lpSlot=null, startX=0, startY=0;
+  const stage=document.getElementById('stage');
+  function cancel(){
+    if(lpTimer){clearTimeout(lpTimer);lpTimer=null;}
+    if(lpSlot){lpSlot.style.transition='opacity .3s';lpSlot.style.opacity='';lpSlot=null;}
+  }
+  stage.addEventListener('pointerdown',e=>{
+    const slot=e.target.closest('.slot');
+    if(!slot||!slot.dataset.cs)return;
+    lpSlot=slot;startX=e.clientX;startY=e.clientY;
+    lpTimer=setTimeout(()=>{
+      if(navigator.vibrate)navigator.vibrate(60);
+      const cs=slot.dataset.cs;
+      cancel();
+      // flightradar24.com links open the FR24 app if installed (Android App Links)
+      window.location.href='https://www.flightradar24.com/'+encodeURIComponent(cs);
+    },3000);
+    // subtle press feedback
+    slot.style.transition='opacity 3s ease';
+    slot.style.opacity='0.55';
+  });
+  stage.addEventListener('pointermove',e=>{
+    if(lpTimer&&(Math.abs(e.clientX-startX)>14||Math.abs(e.clientY-startY)>14))cancel();
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(ev=>stage.addEventListener(ev,cancel));
+  stage.addEventListener('contextmenu',e=>{
+    if(e.target.closest('.slot')?.dataset.cs)e.preventDefault();
+  });
+})();
 
 // -- Screen wake lock (keeps display on — bedside/wall use) --
 let wakeLock=null;
