@@ -1062,14 +1062,31 @@ initLoc();
 })();
 
 // -- Open a flight in FR24: Android intent -> app directly, web fallback --
+// ICAO airline prefix -> IATA code (FR24's flight DB uses IATA flight numbers)
+const IATA_MAP={DAL:'DL',UAL:'UA',AAL:'AA',SWA:'WN',JBU:'B6',NKS:'NK',FFT:'F9',
+  AAY:'G4',ASA:'AS',HAL:'HA',SKW:'OO',RPA:'YX',ENY:'MQ',GJS:'G7',EDV:'9E',
+  PDT:'PT',ACA:'AC',WJA:'WS',TSC:'TS',FDX:'FX',UPS:'5X',ABX:'GB',ATN:'8C',
+  DLH:'LH',BAW:'BA',AFR:'AF',KLM:'KL',UAE:'EK',QTR:'QR',ETD:'EY',SIA:'SQ',
+  KAL:'KE',JAL:'JL',ANA:'NH',CPA:'CX',QFA:'QF',ANZ:'NZ',VIR:'VS',EIN:'EI',
+  THY:'TK',IBE:'IB',RYR:'FR',EZY:'U2',WZZ:'W6',VLG:'VY',SAS:'SK',FIN:'AY',
+  TAP:'TP',CFE:'CJ',AMX:'AM',ARG:'AR',CAL:'CI',EVA:'BR',AUA:'OS',BEL:'SN',
+  LOT:'LO',AZA:'AZ',SVA:'SV',MSR:'MS',ETH:'ET',KQA:'KQ',CCA:'CA',CES:'MU',
+  CSN:'CZ',AIC:'AI',IGO:'6E',GIA:'GA',THA:'TG',VNA:'VN',MAS:'MH',CEB:'5J',
+  DHL:'D0',GEC:'LH',BOX:'3S',CFG:'DE',NOK:'DD',MMD:'6I'};
+function toIataFlight(cs){
+  const m=cs.match(/^([A-Z]{2,3})(\d.*)$/);
+  if(!m)return cs;
+  const iata=IATA_MAP[m[1]];
+  return iata?iata+m[2]:cs;
+}
 function openFR24(cs){
+  const flight=toIataFlight(cs);
   if(/android/i.test(navigator.userAgent)){
-    // /data/flights/ is the path FR24's app resolves to a native flight screen
     window.location.href='intent://www.flightradar24.com/data/flights/'+
-      encodeURIComponent(cs.toLowerCase())+
+      encodeURIComponent(flight.toLowerCase())+
       '#Intent;scheme=https;package=com.flightradar24free;end';
   }else{
-    window.open('https://www.flightradar24.com/'+encodeURIComponent(cs),'_blank');
+    window.open('https://www.flightradar24.com/data/flights/'+encodeURIComponent(flight.toLowerCase()),'_blank');
   }
 }
 
