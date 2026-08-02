@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>OVERHEAD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&family=Cormorant+Garamond:ital@0;1&family=Cinzel&family=Montserrat:wght@300;400&family=Jost:ital,wght@0,300;0,400;1,300&family=Poiret+One&family=Josefin+Sans:ital,wght@0,300;1,300&family=Great+Vibes&family=Parisienne&family=Pinyon+Script&display=swap" rel="stylesheet">
 <style>
 /* -- Poster palettes -- */
 :root{ --bg:#9B1B1B; --fg:#F7F0E3; --fg2:rgba(247,240,227,0.55); --line:rgba(247,240,227,0.14); }
@@ -17,11 +20,20 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--fg);transition:background .6s,color .5s;}
 :root{
-  --font-serif: Georgia,'Times New Roman',serif;
-  --font-sans: 'Helvetica Neue',Helvetica,Arial,sans-serif;
-  --font-didone: 'Didot','Bodoni MT','Playfair Display',Georgia,serif;
-  --font-script: 'Snell Roundhand','Brush Script MT','Segoe Script',cursive;
-  --fontpick: var(--font-serif);
+  --f-georgia:Georgia,'Times New Roman',serif;
+  --f-playfair:'Playfair Display',Georgia,serif;
+  --f-cormorant:'Cormorant Garamond',Georgia,serif;
+  --f-cinzel:'Cinzel',Georgia,serif;
+  --f-helvetica:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  --f-montserrat:'Montserrat',Helvetica,sans-serif;
+  --f-jost:'Jost',Helvetica,sans-serif;
+  --f-poiret:'Poiret One',Helvetica,sans-serif;
+  --f-josefin:'Josefin Sans',Helvetica,sans-serif;
+  --f-vibes:'Great Vibes',cursive;
+  --f-parisienne:'Parisienne',cursive;
+  --f-pinyon:'Pinyon Script',cursive;
+  --fontpick: var(--f-georgia);
+  --textcase: none;
   --textscale: 1;
   --planescale: 1;
 }
@@ -62,6 +74,9 @@ body{font-family:var(--fontpick);}
 .pal-toggles{display:flex;gap:10px;justify-content:center;}
 .pal-row{display:flex;gap:6px;align-items:center;}
 .pal-lbl{font-family:Georgia,serif;font-size:7px;letter-spacing:.25em;color:rgba(255,255,255,.4);text-transform:uppercase;width:38px;flex-shrink:0;}
+.pal-fonts{align-items:flex-start;}
+.font-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;max-width:340px;}
+.font-grid .ptog{font-size:10px;letter-spacing:.04em;text-transform:none;padding:5px 8px;white-space:nowrap;}
 .ptog{
   font-family:Georgia,serif;background:none;
   border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.55);
@@ -112,6 +127,7 @@ body{font-family:var(--fontpick);}
 /* Caption — one small line under the plane, aligned with the stagger */
 .plane-cap{
   flex-shrink:0;
+  text-transform:var(--textcase);
   font-size:calc(clamp(7px,.72vw,10px) * var(--textscale));
   letter-spacing:.12em;color:var(--fg2);
   padding:2px clamp(30px,6vw,110px) 6px;
@@ -169,6 +185,7 @@ body{font-family:var(--fontpick);}
 #colophon{
   flex-shrink:0;padding-top:clamp(10px,1.6vh,18px);
   text-align:center;
+  text-transform:var(--textcase);
   font-style:italic;
   font-size:calc(clamp(8px,.82vw,12px) * var(--textscale));
   letter-spacing:.08em;color:var(--fg2);
@@ -219,12 +236,29 @@ body{font-family:var(--fontpick);}
       <div class="sw" data-t="cream"    style="background:#F2ECDF"></div>
     </div>
     <div class="pal-divider"></div>
-    <div class="pal-row">
+    <div class="pal-row pal-fonts">
       <span class="pal-lbl">Type</span>
-      <button class="ptog fpick act" data-f="serif"  style="font-family:Georgia,serif;">Serif</button>
-      <button class="ptog fpick" data-f="sans"   style="font-family:Helvetica,Arial,sans-serif;">Sans</button>
-      <button class="ptog fpick" data-f="didone" style="font-family:'Didot','Bodoni MT',Georgia,serif;">Didone</button>
-      <button class="ptog fpick" data-f="script" style="font-family:'Snell Roundhand','Segoe Script',cursive;">Script</button>
+      <div class="font-grid">
+        <button class="ptog fpick act" data-f="georgia"    style="font-family:Georgia,serif;">Georgia</button>
+        <button class="ptog fpick" data-f="playfair"   style="font-family:'Playfair Display',serif;">Playfair</button>
+        <button class="ptog fpick" data-f="cormorant"  style="font-family:'Cormorant Garamond',serif;">Cormorant</button>
+        <button class="ptog fpick" data-f="cinzel"     style="font-family:'Cinzel',serif;">Cinzel</button>
+        <button class="ptog fpick" data-f="helvetica"  style="font-family:Helvetica,sans-serif;">Helvetica</button>
+        <button class="ptog fpick" data-f="montserrat" style="font-family:'Montserrat',sans-serif;">Montserrat</button>
+        <button class="ptog fpick" data-f="jost"       style="font-family:'Jost',sans-serif;">Jost</button>
+        <button class="ptog fpick" data-f="poiret"     style="font-family:'Poiret One',sans-serif;">Poiret</button>
+        <button class="ptog fpick" data-f="josefin"    style="font-family:'Josefin Sans',sans-serif;">Josefin</button>
+        <button class="ptog fpick" data-f="vibes"      style="font-family:'Great Vibes',cursive;font-size:11px;">Great Vibes</button>
+        <button class="ptog fpick" data-f="parisienne" style="font-family:'Parisienne',cursive;font-size:11px;">Parisienne</button>
+        <button class="ptog fpick" data-f="pinyon"     style="font-family:'Pinyon Script',cursive;font-size:11px;">Pinyon</button>
+      </div>
+    </div>
+    <div class="pal-row">
+      <span class="pal-lbl">Case</span>
+      <button class="ptog cpick" data-c="lowercase">lower</button>
+      <button class="ptog cpick act" data-c="none">Mixed</button>
+      <button class="ptog cpick" data-c="capitalize">Title</button>
+      <button class="ptog cpick" data-c="uppercase">UPPER</button>
     </div>
     <div class="pal-row">
       <span class="pal-lbl">Text</span>
@@ -524,9 +558,20 @@ if(st){document.body.setAttribute('data-theme',st);
   document.querySelectorAll('.sw').forEach(s=>s.classList.toggle('act',s.dataset.t===st));}
 
 // -- Font / text size / plane size pickers --
-const FONTMAP={serif:'var(--font-serif)',sans:'var(--font-sans)',didone:'var(--font-didone)',script:'var(--font-script)'};
+const FONTMAP={
+  georgia:'var(--f-georgia)',playfair:'var(--f-playfair)',cormorant:'var(--f-cormorant)',
+  cinzel:'var(--f-cinzel)',helvetica:'var(--f-helvetica)',montserrat:'var(--f-montserrat)',
+  jost:'var(--f-jost)',poiret:'var(--f-poiret)',josefin:'var(--f-josefin)',
+  vibes:'var(--f-vibes)',parisienne:'var(--f-parisienne)',pinyon:'var(--f-pinyon)',
+};
+function setCase(c){
+  document.documentElement.style.setProperty('--textcase',c);
+  document.querySelectorAll('.cpick').forEach(b=>b.classList.toggle('act',b.dataset.c===c));
+  localStorage.setItem('oh_case',c);
+}
+document.addEventListener('DOMContentLoaded',()=>{});
 function setFont(f){
-  document.documentElement.style.setProperty('--fontpick',FONTMAP[f]||FONTMAP.serif);
+  document.documentElement.style.setProperty('--fontpick',FONTMAP[f]||FONTMAP.georgia);
   document.querySelectorAll('.fpick').forEach(b=>b.classList.toggle('act',b.dataset.f===f));
   localStorage.setItem('oh_font',f);
 }
@@ -544,9 +589,11 @@ document.querySelectorAll('.fpick').forEach(b=>b.addEventListener('click',()=>se
 document.querySelectorAll('.tpick').forEach(b=>b.addEventListener('click',()=>setTextScale(b.dataset.s)));
 document.querySelectorAll('.ppick').forEach(b=>b.addEventListener('click',()=>setPlaneScale(b.dataset.p)));
 // Restore
+document.querySelectorAll('.cpick').forEach(b=>b.addEventListener('click',()=>setCase(b.dataset.c)));
 if(localStorage.getItem('oh_font'))setFont(localStorage.getItem('oh_font'));
 if(localStorage.getItem('oh_tscale'))setTextScale(localStorage.getItem('oh_tscale'));
 if(localStorage.getItem('oh_pscale'))setPlaneScale(localStorage.getItem('oh_pscale'));
+if(localStorage.getItem('oh_case'))setCase(localStorage.getItem('oh_case'));
 
 
 
