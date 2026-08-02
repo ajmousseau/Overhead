@@ -33,7 +33,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   --f-parisienne:'Parisienne',cursive;
   --f-pinyon:'Pinyon Script',cursive;
   --fontpick: var(--f-georgia);
-  --textcase: none;
   --textscale: 1;
   --planescale: 1;
 }
@@ -124,10 +123,17 @@ body{font-family:var(--fontpick);}
 
 }
 
+/* Case control — applies to captions and colophon including children */
+body[data-case="lowercase"] .plane-cap, body[data-case="lowercase"] .plane-cap *,
+body[data-case="lowercase"] #colophon, body[data-case="lowercase"] #colophon *{text-transform:lowercase;}
+body[data-case="capitalize"] .plane-cap, body[data-case="capitalize"] .plane-cap *,
+body[data-case="capitalize"] #colophon, body[data-case="capitalize"] #colophon *{text-transform:capitalize;}
+body[data-case="uppercase"] .plane-cap, body[data-case="uppercase"] .plane-cap *,
+body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{text-transform:uppercase;}
+
 /* Caption — one small line under the plane, aligned with the stagger */
 .plane-cap{
   flex-shrink:0;
-  text-transform:var(--textcase);
   font-size:calc(clamp(7px,.72vw,10px) * var(--textscale));
   letter-spacing:.12em;color:var(--fg2);
   padding:2px clamp(30px,6vw,110px) 6px;
@@ -185,7 +191,6 @@ body{font-family:var(--fontpick);}
 #colophon{
   flex-shrink:0;padding-top:clamp(10px,1.6vh,18px);
   text-align:center;
-  text-transform:var(--textcase);
   font-style:italic;
   font-size:calc(clamp(8px,.82vw,12px) * var(--textscale));
   letter-spacing:.08em;color:var(--fg2);
@@ -565,7 +570,8 @@ const FONTMAP={
   vibes:'var(--f-vibes)',parisienne:'var(--f-parisienne)',pinyon:'var(--f-pinyon)',
 };
 function setCase(c){
-  document.documentElement.style.setProperty('--textcase',c);
+  if(c==='none')document.body.removeAttribute('data-case');
+  else document.body.setAttribute('data-case',c);
   document.querySelectorAll('.cpick').forEach(b=>b.classList.toggle('act',b.dataset.c===c));
   localStorage.setItem('oh_case',c);
 }
