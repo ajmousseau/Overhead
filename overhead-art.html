@@ -434,7 +434,7 @@ const PINNED={
   RPA:{src:'/liveries/RPA_320.webp',scale:0.52},
   GJS:{src:'/liveries/GJS_CR7.webp',scale:0.6},
   ENY:{src:'/liveries/ENY_E75.webp',scale:0.6},
-  VIR:{src:'/liveries/VIR_744.webp',scale:0.5},
+  VIR:{src:'/liveries/VIR_744.webp',scale:0.35},
 };
 
 function livSrc(icao,tc){
@@ -530,14 +530,19 @@ function slotHTML(src,cap,scale){
 function renderDemo(){
   const scene=DEMO_SCENES[demoScene];
   scene.forEach((p,i)=>{
-    // tc may be an ADS-B code (B744) or a direct file code (744, 77W)
-    const t=TMAP[p.tc]||p.tc;
-    const src=`/liveries/${p.cs}_${t}.webp`;
+    // Pinned airlines use custom file + scale, same as live mode
+    let src, scale;
+    if(PINNED[p.cs]){
+      src=PINNED[p.cs].src; scale=PINNED[p.cs].scale;
+    }else{
+      const t=TMAP[p.tc]||p.tc;
+      src=`/liveries/${p.cs}_${t}.webp`; scale=1;
+    }
     const route=apName(p.from)+' &ndash; '+apName(p.to);
     const cap=capLine(p.name,FTYPES[p.tc]||'',route,p.alt,'');
     const slot=document.getElementById('s'+i);
     slot.style.opacity='0';
-    setTimeout(()=>{slot.innerHTML=slotHTML(src,cap);slot.style.opacity='1';},350);
+    setTimeout(()=>{slot.innerHTML=slotHTML(src,cap,scale);slot.style.opacity='1';},350);
   });
   document.getElementById('colophon').innerHTML=
     `<span class="rule"></span><span class="num">&#8470; ${posterNum}</span>&ensp;&mdash;&ensp;Received ${fmtDate()}, three aircraft in composition<span class="rule"></span>`;
