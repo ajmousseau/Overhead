@@ -260,13 +260,17 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
 
   /* Gentle alternating alignment via caption instead of plane position */
   .plane-cap{
-    padding:6px 4px 0;
+    padding:0 4px 0;
+    margin-top:-4px;             /* pull caption toward the livery */
     text-align:center !important;
     font-size:calc(clamp(8px,2.4vw,13px) * var(--textscale));
     letter-spacing:.1em;
-    white-space:normal;          /* allow 2-line wrap on narrow walls */
-    line-height:1.5;
+    white-space:normal;
+    line-height:1.55;
   }
+  /* Two-row caption: airline/type on row 1, route/alt on row 2 */
+  .plane-cap .cl1,.plane-cap .cl2{display:block;}
+  .plane-cap .cap-mid{display:none;}
 
   /* Colophon slightly larger for poster legibility */
   #colophon{
@@ -647,13 +651,16 @@ async function fetchFlights(){
 }
 
 function capLine(alName,typeName,route,alt,dist){
-  const bits=[];
-  bits.push(`<b>${alName}</b>`);
-  if(typeName)bits.push(typeName);
-  if(route)bits.push(route);
-  if(alt)bits.push(alt.toLocaleString()+' ft');
-  if(dist)bits.push(dist);
-  return bits.join('<span class="sep">&middot;</span>');
+  const g1=[`<b>${alName}</b>`];
+  if(typeName)g1.push(typeName);
+  const g2=[];
+  if(route)g2.push(route);
+  if(alt)g2.push(alt.toLocaleString()+' ft');
+  if(dist)g2.push(dist);
+  const l1=g1.join('<span class="sep">&middot;</span>');
+  const l2=g2.join('<span class="sep">&middot;</span>');
+  return `<span class="cl1">${l1}</span>`+
+         (l2?`<span class="sep cap-mid">&middot;</span><span class="cl2">${l2}</span>`:'');
 }
 
 function slotHTML(src,cap,scale){
