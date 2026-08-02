@@ -480,12 +480,12 @@ DLH:'Lufthansa',BAW:'British Airways',AFR:'Air France',KLM:'KLM',IBE:'Iberia',
 EZY:'easyJet',RYR:'Ryanair',SAS:'Scandinavian Airlines',FIN:'Finnair',
 THY:'Turkish Airlines',UAE:'Emirates',QTR:'Qatar Airways',ETD:'Etihad Airways',
 SIA:'Singapore Airlines',CPA:'Cathay Pacific',QFA:'Qantas',ANZ:'Air New Zealand',
-KAL:'Korean Air',JAL:'Japan Airlines',ANA:'All Nippon Airways',FDX:'FedEx Express',UPS:'UPS Airlines',SVA:'Saudia',MMD:'Air Alsie',CFE:'BA CityFlyer',VIR:'Virgin Atlantic',DHL:'DHL Aviation',NOK:'Nok Air',CFG:'Condor',WZZ:'Wizz Air'};
+KAL:'Korean Air',JAL:'Japan Airlines',ANA:'All Nippon Airways',FDX:'FedEx Express',UPS:'UPS Airlines',SVA:'Saudia',MMD:'Air Alsie',CAL:'China Airlines',CFE:'BA CityFlyer',VIR:'Virgin Atlantic',DHL:'DHL Aviation',NOK:'Nok Air',CFG:'Condor',WZZ:'Wizz Air'};
 
 const DEMO_SCENES=[
   [ // Scene 1 — Queens of the Sky
-    {cs:'KAL',tc:'B744',name:'Korean Air',from:'ICN',to:'JFK',alt:38000},
     {cs:'DAL',tc:'A359',name:'Delta Air Lines',from:'DTW',to:'AMS',alt:39000},
+    {cs:'AFR',tc:'B789',name:'Air France',from:'CDG',to:'JFK',alt:38000},
     {cs:'UAE',tc:'A388',name:'Emirates',from:'DXB',to:'ORD',alt:40000},
   ],
   [ // Scene 2 — Workhorses
@@ -504,9 +504,9 @@ const DEMO_SCENES=[
     {cs:'CFG',tc:'A21N',name:'Condor',from:'FRA',to:'PMI',alt:36000},
   ],
   [ // Scene 5 — SkyTeam
-    {cs:'AFR',tc:'B789',name:'Air France',from:'CDG',to:'JFK',alt:38000},
+    {cs:'CAL',tc:'B744',name:'China Airlines',from:'TPE',to:'LAX',alt:38000},
     {cs:'KLM',tc:'B789',name:'KLM Royal Dutch Airlines',from:'AMS',to:'DTW',alt:37000},
-    {cs:'VIR',tc:'B744',name:'Virgin Atlantic',from:'LHR',to:'MCO',alt:38000},
+    {cs:'KAL',tc:'B744',name:'Korean Air',from:'ICN',to:'JFK',alt:38000},
   ],
   [ // Scene 6 — USA Budget
     {cs:'SWA',tc:'B38M',name:'Southwest Airlines',from:'MDW',to:'PHX',alt:36000},
@@ -543,7 +543,15 @@ function fmtTime(){
   const ap=h>=12?'p.m.':'a.m.';h=h%12||12;
   return h+':'+m+'&thinsp;'+ap;
 }
+// Home override — near these coords, always display this name.
+// Everywhere else uses whatever GPS/geocoding resolves.
+const HOME={lat:42.809,lon:-85.704,radiusMi:4,name:'Byron Center',state:'MI'};
+function atHome(){
+  if(uLat===null)return false;
+  return hav(uLat,uLon,HOME.lat,HOME.lon)<=HOME.radiusMi;
+}
 function placeStr(){
+  if(atHome())return `${HOME.name}, ${HOME.state}`;
   const c=localStorage.getItem('oh_city')||'';
   const s=localStorage.getItem('oh_state')||'';
   return c?(s?`${c}, ${s}`:c):'';
