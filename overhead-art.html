@@ -421,7 +421,7 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
 const AIRLABS='7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
 const RADII=[10,25,50,100];
 
-const HAS_LIVERY=new Set(["AAL", "AAR", "AAV", "AAY", "ABX", "ACA", "AFR", "AIC", "AIQ", "AIZ", "AJT", "ALK", "ANA", "ANZ", "APC", "APG", "ARN", "ASA", "ATN", "ATW", "AUA", "AVN", "AXB", "AXM", "AZA", "BAV", "BAW", "BCI", "BEL", "BIK", "BKP", "BOE", "BTI", "CAI", "CAL", "CCA", "CEB", "CES", "CFG", "CPA", "CPZ", "CRK", "CSN", "CTN", "CXA", "DAE", "DAL", "DAN", "DHL", "DLH", "EAL", "EIN", "EJT", "ELY", "ENY", "ETD", "ETH", "EVA", "EWG", "EWR", "EZY", "FDX", "FFT", "FIN", "FJI", "FNY", "GAP", "GEC", "GFA", "GIA", "GJS", "GOT", "GPH", "GWI", "GXA", "HAL", "HDA", "HKE", "HNA", "HVN", "IBE", "IBS", "ICE", "IGO", "IRM", "ITY", "JAA", "JAL", "JAS", "JBU", "JIN", "JSA", "JST", "KAC", "KAL", "KLM", "KQA", "KZR", "LAO", "LDA", "LGL", "LNI", "LOT", "LZB", "MAC", "MAL", "MAS", "MGL", "MNA", "MNB", "MON", "MPH", "MSR", "MXD", "MXY", "MYS", "NAF", "NCA", "NGA", "NHA", "NIU", "NKS", "NOK", "NOZ", "NRS", "NXS", "OAL", "OKA", "OMA", "ONG", "OPT", "PAC", "PAL", "PDT", "PGT", "PIA", "PKC", "PKX", "PLI", "PVG", "QFA", "QNZ", "QTR", "RAM", "REU", "RGN", "RKH", "ROT", "RPA", "RSH", "RYR", "SAA", "SAS", "SAT", "SBI", "SBY", "SEY", "SHQ", "SIA", "SJM", "SKJ", "SKW", "SLG", "SOO", "SQC", "SSB", "SVA", "SWA", "SWD", "TAI", "TAJ", "TAM", "TAP", "TAX", "THA", "THY", "TIG", "TOM", "TOW", "TRA", "TSC", "TUI", "TVF", "TVJ", "TYA", "UAE", "UAL", "UBD", "UCT", "UIA", "UKL", "UPS", "UZB", "VAN", "VIM", "VJC", "VLG", "VNA", "VNL", "VOE", "VOZ", "VRD", "VRG", "VUN", "WEN", "WJA", "WN", "WOA", "WZZ", "XAX", "YZR", "ZCH", "ZMB", "MMD", "CFE", "VIR"]);
+const HAS_LIVERY=new Set(["AAL", "AAR", "AAV", "AAY", "ABX", "ACA", "AFR", "AIC", "AIQ", "AIZ", "AJT", "ALK", "ANA", "ANZ", "APC", "APG", "ARN", "ASA", "ATN", "ATW", "AUA", "AVN", "AXB", "AXM", "AZA", "BAV", "BAW", "BCI", "BEL", "BIK", "BKP", "BOE", "BTI", "CAI", "CAL", "CCA", "CEB", "CES", "CFG", "CPA", "CPZ", "CRK", "CSN", "CTN", "CXA", "DAE", "DAL", "DAN", "DHL", "DLH", "EAL", "EIN", "EJT", "ELY", "ENY", "ETD", "ETH", "EVA", "EWG", "EWR", "EZY", "FDX", "FFT", "FIN", "FJI", "FNY", "GAP", "GEC", "GFA", "GIA", "GJS", "GOT", "GPH", "GWI", "GXA", "HAL", "HDA", "HKE", "HNA", "HVN", "IBE", "IBS", "ICE", "IGO", "IRM", "ITY", "JAA", "JAL", "JAS", "JBU", "JIN", "JSA", "JST", "KAC", "KAL", "KLM", "KQA", "KZR", "LAO", "LDA", "LGL", "LNI", "LOT", "LZB", "MAC", "MAL", "MAS", "MGL", "MNA", "MNB", "MON", "MPH", "MSR", "MXD", "MXY", "MYS", "NAF", "NCA", "NGA", "NHA", "NIU", "NKS", "NOK", "NOZ", "NRS", "NXS", "OAL", "OKA", "OMA", "ONG", "OPT", "PAC", "PAL", "PDT", "PGT", "PIA", "PKC", "PKX", "PLI", "PVG", "QFA", "QNZ", "QTR", "RAM", "REU", "RGN", "RKH", "ROT", "RPA", "RSH", "RYR", "SAA", "SAS", "SAT", "SBI", "SBY", "SEY", "SHQ", "SIA", "SJM", "SKJ", "SKW", "SLG", "SOO", "SQC", "SSB", "SVA", "SWA", "SWD", "TAI", "TAJ", "TAM", "TAP", "TAX", "THA", "THY", "TIG", "TOM", "TOW", "TRA", "TSC", "TUI", "TVF", "TVJ", "TYA", "UAE", "UAL", "UBD", "UCT", "UIA", "UKL", "UPS", "UZB", "VAN", "VIM", "VJC", "VLG", "VNA", "VNL", "VOE", "VOZ", "VRD", "VRG", "VUN", "WEN", "WJA", "WN", "WOA", "WZZ", "XAX", "YZR", "ZCH", "ZMB", "MMD", "CFE", "VIR", "EDV", "AMX", "ARG"]);
 
 const TMAP={
 B731:'737',B732:'737',B733:'737',B734:'737',B735:'737',B736:'737',
@@ -480,7 +480,7 @@ DLH:'Lufthansa',BAW:'British Airways',AFR:'Air France',KLM:'KLM',IBE:'Iberia',
 EZY:'easyJet',RYR:'Ryanair',SAS:'Scandinavian Airlines',FIN:'Finnair',
 THY:'Turkish Airlines',UAE:'Emirates',QTR:'Qatar Airways',ETD:'Etihad Airways',
 SIA:'Singapore Airlines',CPA:'Cathay Pacific',QFA:'Qantas',ANZ:'Air New Zealand',
-KAL:'Korean Air',JAL:'Japan Airlines',ANA:'All Nippon Airways',FDX:'FedEx Express',UPS:'UPS Airlines',SVA:'Saudia',MMD:'Air Alsie',CAL:'China Airlines',CFE:'BA CityFlyer',VIR:'Virgin Atlantic',DHL:'DHL Aviation',NOK:'Nok Air',CFG:'Condor',WZZ:'Wizz Air'};
+KAL:'Korean Air',JAL:'Japan Airlines',ANA:'All Nippon Airways',FDX:'FedEx Express',UPS:'UPS Airlines',SVA:'Saudia',MMD:'Air Alsie',CAL:'China Airlines',AMX:'Aeromexico',ARG:'Aerol\u00edneas Argentinas',CFE:'BA CityFlyer',VIR:'Virgin Atlantic',DHL:'DHL Aviation',NOK:'Nok Air',CFG:'Condor',WZZ:'Wizz Air'};
 
 const DEMO_SCENES=[
   [ // Scene 1 — Queens of the Sky
@@ -522,6 +522,11 @@ const DEMO_SCENES=[
     {cs:'DAL',tc:'A21N',name:'Delta Air Lines',from:'MSP',to:'ATL',alt:34000},
     {cs:'DAL',tc:'A359',name:'Delta Air Lines',from:'DTW',to:'AMS',alt:39000},
     {cs:'DAL',tc:'B763',name:'Delta Air Lines',from:'JFK',to:'LAX',alt:36000},
+  ],
+  [ // Scene 9 — The Americas
+    {cs:'ACA',tc:'B763',name:'Air Canada',from:'YYZ',to:'YVR',alt:37000},
+    {cs:'AMX',tc:'B738',name:'Aeromexico',from:'MEX',to:'ORD',alt:35000},
+    {cs:'ARG',tc:'B744',name:'Aerol\u00edneas Argentinas',from:'EZE',to:'MAD',alt:38000},
   ],
 ];
 let demoScene=0, demoTimer=null;
@@ -575,7 +580,7 @@ setInterval(()=>{
   if(el)el.innerHTML=fmtTime();
 },15000);
 // Default type per airline when ADS-B type is missing/unknown
-const DEFAULT_TYPE={DAL:'738',UAL:'738',AAL:'321',SWA:'738',AAY:'320',NKS:'320',
+const DEFAULT_TYPE={EDV:'CR9',DAL:'738',UAL:'738',AAL:'321',SWA:'738',AAY:'320',NKS:'320',
 ASA:'738',JBU:'320',FFT:'320',ENY:'E75',GJS:'CR9',RPA:'E75',SKW:'E75',
 ACA:'738',WJA:'738',DLH:'738',BAW:'77W',AFR:'320',KLM:'738',IBE:'320',
 EZY:'320',RYR:'738',SAS:'320',FIN:'320',THY:'738',UAE:'388',QTR:'789',
@@ -586,18 +591,19 @@ ETD:'789',SIA:'359',CPA:'359',QFA:'738',ANZ:'789',KAL:'77W',JAL:'789',ANA:'789'}
 // (custom images are tight-cropped; LogoStream renders have padding, so customs
 //  render oversized without a scale factor)
 const PINNED={
-  SKW:{src:'/liveries/SKW_E75.webp',scale:0.58},
-  RPA:{src:'/liveries/RPA_320.webp',scale:0.52},
   GJS:{src:'/liveries/GJS_CR7.webp',scale:0.6},
-  ENY:{src:'/liveries/ENY_E75.webp',scale:0.6},
   VIR:{src:'/liveries/VIR_744.webp',scale:0.65},
 };
+// Airline aliases — flights from key use files from value
+// (all SkyWest flights render the Endeavor livery)
+const AL_ALIAS={SKW:'EDV'};
 
 function livSrc(icao,tc){
   if(PINNED[icao])return PINNED[icao].src;
-  if(!HAS_LIVERY.has(icao))return null;
-  const t=TMAP[tc]||DEFAULT_TYPE[icao]||'320';
-  return `/liveries/${icao}_${t}.webp`;
+  const fileIcao=AL_ALIAS[icao]||icao;
+  if(!HAS_LIVERY.has(fileIcao))return null;
+  const t=TMAP[tc]||DEFAULT_TYPE[fileIcao]||DEFAULT_TYPE[icao]||'320';
+  return `/liveries/${fileIcao}_${t}.webp`;
 }
 function livScale(icao){
   return PINNED[icao] ? PINNED[icao].scale : 1;
