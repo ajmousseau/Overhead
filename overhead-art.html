@@ -261,7 +261,7 @@ MKE:'Milwaukee',MSY:'New Orleans',OMA:'Omaha',PIT:'Pittsburgh',RDU:'Raleigh',
 RSW:'Fort Myers',SAN:'San Diego',SAT:'San Antonio',STL:'St Louis',TPA:'Tampa',
 TVC:'Traverse City',LAS:'Las Vegas',PDX:'Portland',FLL:'Fort Lauderdale',BUF:'Buffalo',
 YYZ:'Toronto',YUL:'Montreal',LHR:'London',CDG:'Paris',FRA:'Frankfurt',AMS:'Amsterdam',
-DXB:'Dubai',NRT:'Tokyo',SIN:'Singapore',ICN:'Seoul',HKG:'Hong Kong',SYD:'Sydney',JED:'Jeddah',SDF:'Louisville',ANC:'Anchorage',MEM:'Memphis',LEJ:'Leipzig',DMK:'Bangkok',CNX:'Chiang Mai',SGD:'S\u00f8nderborg',LCY:'London City',PMI:'Palma',CVG:'Cincinnati'};
+DXB:'Dubai',NRT:'Tokyo',SIN:'Singapore',ICN:'Seoul',HKG:'Hong Kong',SYD:'Sydney',JED:'Jeddah',SDF:'Louisville',ANC:'Anchorage',MEM:'Memphis',LEJ:'Leipzig',DMK:'Bangkok',CNX:'Chiang Mai',SGD:'S\u00f8nderborg',LCY:'London City',PMI:'Palma',CVG:'Cincinnati',DOH:'Doha',LGW:'London Gatwick',BCN:'Barcelona',STN:'London Stansted',DUB:'Dublin',EDI:'Edinburgh'};
 
 const FTYPES={B738:'Boeing 737-800',B739:'Boeing 737-900',B37M:'Boeing 737 MAX 7',
 B38M:'Boeing 737 MAX 8',B39M:'Boeing 737 MAX 9',A319:'Airbus A319',A320:'Airbus A320',
@@ -296,7 +296,7 @@ const DEMO_SCENES=[
   ],
   [ // Scene 3 — World Tour
     {cs:'SVA',tc:'B77W',name:'Saudia',from:'JED',to:'LHR',alt:40000},
-    {cs:'FFT',tc:'A21N',name:'Frontier Airlines',from:'DEN',to:'MCO',alt:34000},
+    {cs:'QTR',tc:'A359',name:'Qatar Airways',from:'DOH',to:'JFK',alt:41000},
     {cs:'SIA',tc:'A359',name:'Singapore Airlines',from:'SIN',to:'JFK',alt:41000},
   ],
   [ // Scene 4 — Off the Beaten Path
@@ -308,6 +308,16 @@ const DEMO_SCENES=[
     {cs:'AFR',tc:'B789',name:'Air France',from:'CDG',to:'JFK',alt:38000},
     {cs:'KLM',tc:'B789',name:'KLM Royal Dutch Airlines',from:'AMS',to:'DTW',alt:37000},
     {cs:'VIR',tc:'A359',name:'Virgin Atlantic',from:'LHR',to:'JFK',alt:39000},
+  ],
+  [ // Scene 6 — USA Budget
+    {cs:'SWA',tc:'B38M',name:'Southwest Airlines',from:'MDW',to:'PHX',alt:36000},
+    {cs:'FFT',tc:'A21N',name:'Frontier Airlines',from:'DEN',to:'MCO',alt:34000},
+    {cs:'JBU',tc:'A21N',name:'JetBlue Airways',from:'JFK',to:'FLL',alt:35000},
+  ],
+  [ // Scene 7 — Europe Budget
+    {cs:'EZY',tc:'A21N',name:'easyJet',from:'LGW',to:'BCN',alt:35000},
+    {cs:'RYR',tc:'B38M',name:'Ryanair',from:'STN',to:'DUB',alt:34000},
+    {cs:'CFE',tc:'E90', name:'BA CityFlyer',from:'LCY',to:'EDI',alt:32000},
   ],
 ];
 let demoScene=0, demoTimer=null;
@@ -473,7 +483,7 @@ function toggleDemo(){
   demoMode=!demoMode;
   document.getElementById('demobtn').classList.toggle('on',demoMode);
   if(demoMode){
-    demoScene=0;
+    demoScene=Math.floor(Math.random()*DEMO_SCENES.length);
     renderDemo();
     demoTimer=setInterval(()=>{
       demoScene=(demoScene+1)%DEMO_SCENES.length;
