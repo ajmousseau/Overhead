@@ -94,6 +94,7 @@ body{font-family:var(--fontpick);}
 }
 .ptog:hover{color:#fff;border-color:rgba(255,255,255,.4);}
 .ptog.on{color:#fff;border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.08);}
+#pal-ver{text-align:center;font-family:Georgia,serif;font-size:7px;letter-spacing:.3em;color:rgba(255,255,255,.22);margin-top:2px;user-select:all;}
 .sw{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.15);}
 .sw:hover,.sw.act{border-color:#fff;}
 
@@ -414,6 +415,7 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
       <button class="ptog" onclick="hardRefresh()">Refresh</button>
       <button class="ptog" onclick="exitApp()">Exit</button>
     </div>
+    <div id="pal-ver"></div>
   </div>
 
 
@@ -445,6 +447,7 @@ body[data-case="uppercase"] #colophon, body[data-case="uppercase"] #colophon *{t
 
 <script>
 'use strict';
+const APP_VERSION='1.2.1';   // bump on every push
 const AIRLABS='7b14d0aa-9dbb-45cc-bcd0-31acac5a4e38';
 const RADII=[10,25,50,100];
 
@@ -847,7 +850,7 @@ function render(ac){
     const dist=a._d<=10?a._d.toFixed(1)+' mi overhead':a._d.toFixed(1)+' mi away';
     const cap=capLine(ALNAMES[icao]||icao,FTYPES[tc]||'',routeStr,alt,dist);
     slot.innerHTML=slotHTML(livSrc(icao,tc),cap,livScale(icao));
-    slot.dataset.cs=cs;
+    slot.dataset.cs=cs;slot.dataset.lat=a.lat||'';slot.dataset.lon=a.lon||'';
   }
   // Colophon: ? · date · coords · location · N aircraft
   if(uLat)updateColophon(ac.length);
@@ -870,6 +873,7 @@ function hardRefresh(){
   u.searchParams.set('r',Date.now());
   window.location.replace(u.toString());
 }
+document.getElementById('pal-ver').textContent='v'+APP_VERSION;
 function togglePalette(){document.getElementById('palette').classList.toggle('show');}
 function showLog(){
   const s=logStats();
@@ -1079,14 +1083,24 @@ function toIataFlight(cs){
   const iata=IATA_MAP[m[1]];
   return iata?iata+m[2]:cs;
 }
-function openFR24(cs){
+async function openFR24(cs, lat, lon){
   const flight=toIataFlight(cs);
+  let path='data/flights/'+encodeURIComponent(flight.toLowerCase());   // search fallback
+  // Resolve FR24's internal flight id -> deep-link straight onto the map
+  if(lat&&lon){
+    try{
+      const r=await fetchT(`/.netlify/functions/fr24?lat=${lat}&lon=${lon}&cs=${encodeURIComponent(cs)}`,3500);
+      if(r.ok){
+        const d=await r.json();
+        if(d.id)path=encodeURIComponent(cs)+'/'+d.id;
+      }
+    }catch(e){}
+  }
   if(/android/i.test(navigator.userAgent)){
-    window.location.href='intent://www.flightradar24.com/data/flights/'+
-      encodeURIComponent(flight.toLowerCase())+
+    window.location.href='intent://www.flightradar24.com/'+path+
       '#Intent;scheme=https;package=com.flightradar24free;end';
   }else{
-    window.open('https://www.flightradar24.com/data/flights/'+encodeURIComponent(flight.toLowerCase()),'_blank');
+    window.open('https://www.flightradar24.com/'+path,'_blank');
   }
 }
 
@@ -1104,9 +1118,9 @@ function openFR24(cs){
     lpSlot=slot;startX=e.clientX;startY=e.clientY;
     lpTimer=setTimeout(()=>{
       if(navigator.vibrate)navigator.vibrate(60);
-      const cs=slot.dataset.cs;
+      const cs=slot.dataset.cs, la=slot.dataset.lat, lo=slot.dataset.lon;
       cancel();
-      openFR24(cs);
+      openFR24(cs, la, lo);
     },1000);
     // subtle press feedback
     slot.style.transition='opacity 1s ease';
